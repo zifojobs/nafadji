@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { modifierMembre, definirCode } from "../actions";
 import { MembreForm } from "./MembreForm";
+import { SupprimerMembre } from "./SupprimerMembre";
 
 export default async function AdminMembres() {
   const { data: membres } = await db.from("membres").select("*").order("nom_complet");
@@ -38,6 +39,7 @@ export default async function AdminMembres() {
               <input name="code" required placeholder="Nouveau code" className="flex-1 rounded-lg border border-[#E2DFD6] p-2 text-sm" />
               <button className="rounded-lg bg-[#E3B23C] px-3 text-sm font-semibold text-[#1C1C17]">Réinitialiser le code</button>
             </form>
+            <SupprimerMembre id={m.id} nom={m.nom_complet} />
           </details>
         ))}
       </div>

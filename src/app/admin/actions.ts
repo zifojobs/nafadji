@@ -132,3 +132,21 @@ export async function majParametres(formData: FormData) {
   }).eq("id", 1);
   revalidatePath("/admin/parametres");
 }
+
+export async function supprimerMembre(
+  _prev: { erreur?: string } | null,
+  formData: FormData,
+): Promise<{ erreur?: string } | null> {
+  const session = await exigerAdmin();
+  const id = String(formData.get("id"));
+  if (id === session.membreId)
+    return { erreur: "Vous ne pouvez pas supprimer votre propre compte." };
+  // Supprime aussi ses cotisations (cascade). Bloqué si le membre apparaît
+  // dans l'historique de caisse (on ne réécrit pas l'historique).
+  const { error } = await db.from("membres").delete().eq("id", id);
+  if (error?.code === "23503")
+    return { erreur: "Ce membre apparaît dans l'historique de caisse — désactivez-le plutôt (décocher « Actif »)." };
+  if (error) return { erreur: error.message };
+  revalidatePath("/admin/membres");
+  return null;
+}
