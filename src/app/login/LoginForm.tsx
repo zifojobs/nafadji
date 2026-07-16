@@ -16,7 +16,7 @@ export function LoginForm({ membres }: { membres: { id: string; nom_complet: str
         Association Nafadji
       </h1>
       <p className="mb-6 mt-2 text-center text-[10.5px] uppercase tracking-[.24em] text-[#9A8B5E]">
-        Kédougou · Sénégal — Diaspora
+        Diaspora
       </p>
 
       {state?.erreur && (
