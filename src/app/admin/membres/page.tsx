@@ -6,48 +6,48 @@ export default async function AdminMembres() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold">Membres ({membres?.length ?? 0})</h1>
+      <h1 className="text-xl font-bold text-[#1C1C17]">Membres ({membres?.length ?? 0})</h1>
 
-      <form action={creerMembre} className="bg-white rounded-2xl p-4 shadow space-y-3">
-        <h2 className="font-semibold">Ajouter un membre</h2>
-        <input name="nom_complet" required placeholder="Nom complet" className="w-full border rounded-lg p-2" />
+      <form action={creerMembre} className="space-y-3 rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(28,28,23,.08)]">
+        <h2 className="font-semibold text-[#1C1C17]">Ajouter un membre</h2>
+        <input name="nom_complet" required placeholder="Nom complet" className="w-full rounded-lg border border-[#E2DFD6] p-2" />
         <div className="flex gap-3">
-          <input name="telephone" placeholder="Téléphone (optionnel)" className="flex-1 border rounded-lg p-2" />
-          <input name="date_adhesion" type="date" required className="border rounded-lg p-2" />
+          <input name="telephone" placeholder="Téléphone (optionnel)" className="flex-1 rounded-lg border border-[#E2DFD6] p-2" />
+          <input name="date_adhesion" type="date" required className="rounded-lg border border-[#E2DFD6] p-2" />
         </div>
-        <div className="flex gap-3 items-center">
-          <input name="code" required placeholder="Code personnel initial" className="flex-1 border rounded-lg p-2" />
-          <label className="text-sm flex items-center gap-1"><input type="checkbox" name="is_admin" /> Bureau</label>
+        <div className="flex items-center gap-3">
+          <input name="code" required placeholder="Code personnel initial" className="flex-1 rounded-lg border border-[#E2DFD6] p-2" />
+          <label className="flex items-center gap-1 text-sm"><input type="checkbox" name="is_admin" /> Bureau</label>
         </div>
-        <button className="bg-emerald-700 text-white rounded-lg px-4 py-2 font-semibold">Ajouter</button>
+        <button className="nf-btn-grad rounded-lg px-4 py-2 font-semibold text-white">Ajouter</button>
       </form>
 
       <div className="space-y-3">
         {(membres ?? []).map((m) => (
-          <details key={m.id} className="bg-white rounded-xl p-3 shadow">
-            <summary className="cursor-pointer flex justify-between">
-              <span className={m.actif ? "" : "line-through text-gray-400"}>
-                {m.nom_complet} {m.is_admin && <span className="text-xs bg-gray-900 text-white rounded px-1">bureau</span>}
+          <details key={m.id} className="rounded-2xl bg-white p-3 shadow-[0_2px_10px_rgba(28,28,23,.08)]">
+            <summary className="flex cursor-pointer justify-between">
+              <span className={m.actif ? "" : "text-[#9A9A90] line-through"}>
+                {m.nom_complet} {m.is_admin && <span className="rounded bg-[#1C1C17] px-1 text-xs text-white">bureau</span>}
               </span>
-              <span className="text-sm text-gray-500">adhésion {new Date(m.date_adhesion).toLocaleDateString("fr-FR")}</span>
+              <span className="text-sm text-[#6B6B60]">adhésion {new Date(m.date_adhesion).toLocaleDateString("fr-FR")}</span>
             </summary>
-            <form action={modifierMembre} className="mt-3 space-y-2 border-t pt-3">
+            <form action={modifierMembre} className="mt-3 space-y-2 border-t border-[#E5E2D9] pt-3">
               <input type="hidden" name="id" value={m.id} />
-              <input name="nom_complet" defaultValue={m.nom_complet} className="w-full border rounded-lg p-2" />
+              <input name="nom_complet" defaultValue={m.nom_complet} className="w-full rounded-lg border border-[#E2DFD6] p-2" />
               <div className="flex gap-2">
-                <input name="telephone" defaultValue={m.telephone ?? ""} placeholder="Téléphone" className="flex-1 border rounded-lg p-2" />
-                <input name="date_adhesion" type="date" defaultValue={m.date_adhesion} className="border rounded-lg p-2" />
+                <input name="telephone" defaultValue={m.telephone ?? ""} placeholder="Téléphone" className="flex-1 rounded-lg border border-[#E2DFD6] p-2" />
+                <input name="date_adhesion" type="date" defaultValue={m.date_adhesion} className="rounded-lg border border-[#E2DFD6] p-2" />
               </div>
               <div className="flex gap-4 text-sm">
                 <label className="flex items-center gap-1"><input type="checkbox" name="is_admin" defaultChecked={m.is_admin} /> Bureau</label>
                 <label className="flex items-center gap-1"><input type="checkbox" name="actif" defaultChecked={m.actif} /> Actif</label>
               </div>
-              <button className="bg-gray-900 text-white rounded-lg px-3 py-1.5 text-sm">Enregistrer</button>
+              <button className="rounded-lg bg-[#1C1C17] px-3 py-1.5 text-sm text-white">Enregistrer</button>
             </form>
             <form action={definirCode} className="mt-2 flex gap-2">
               <input type="hidden" name="id" value={m.id} />
-              <input name="code" required placeholder="Nouveau code" className="flex-1 border rounded-lg p-2 text-sm" />
-              <button className="bg-amber-600 text-white rounded-lg px-3 text-sm">Réinitialiser le code</button>
+              <input name="code" required placeholder="Nouveau code" className="flex-1 rounded-lg border border-[#E2DFD6] p-2 text-sm" />
+              <button className="rounded-lg bg-[#E3B23C] px-3 text-sm font-semibold text-[#1C1C17]">Réinitialiser le code</button>
             </form>
           </details>
         ))}

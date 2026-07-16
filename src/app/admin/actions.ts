@@ -43,7 +43,9 @@ export async function definirCode(formData: FormData) {
   revalidatePath("/admin/membres");
 }
 
-export async function enregistrerCotisation(formData: FormData) {
+export type CotisationState = { erreur?: string } | null;
+
+export async function enregistrerCotisation(_prevState: CotisationState, formData: FormData): Promise<CotisationState> {
   await exigerAdmin();
   const mois = String(formData.get("mois")) + "-01"; // input type=month → "YYYY-MM"
   const { error } = await db.from("cotisations").insert({
@@ -53,9 +55,10 @@ export async function enregistrerCotisation(formData: FormData) {
     date_paiement: String(formData.get("date_paiement")),
     note: String(formData.get("note") ?? "").trim() || null,
   });
-  if (error?.code === "23505") throw new Error("Ce mois est déjà payé pour ce membre.");
-  if (error) throw new Error(error.message);
+  if (error?.code === "23505") return { erreur: "Ce mois est déjà payé pour ce membre." };
+  if (error) return { erreur: error.message };
   revalidatePath("/admin/cotisations");
+  return null;
 }
 
 export async function supprimerCotisation(formData: FormData) {

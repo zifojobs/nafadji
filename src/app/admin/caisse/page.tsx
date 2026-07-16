@@ -12,25 +12,25 @@ export default async function AdminCaisse() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold">Caisse</h1>
-      <div className="bg-emerald-950 text-white rounded-2xl p-4">
-        <div className="text-sm opacity-80">Solde actuel</div>
-        <div className="text-3xl font-bold">{Number(caisse.solde).toLocaleString("fr-FR")} €</div>
+      <h1 className="text-xl font-bold text-[#1C1C17]">Caisse</h1>
+      <div className="nf-caisse-grad rounded-2xl border border-[#E3B23C]/35 p-4 text-white">
+        <div className="text-sm text-white/70">Solde actuel</div>
+        <div className="nf-serif text-3xl font-bold text-[#E3B23C]">{Number(caisse.solde).toLocaleString("fr-FR")} €</div>
       </div>
-      <form action={majCaisse} className="bg-white rounded-2xl p-4 shadow space-y-3">
-        <h2 className="font-semibold">Mettre à jour le solde</h2>
-        <input name="solde" type="number" step="0.01" required placeholder="Nouveau solde" className="w-full border rounded-lg p-2" />
-        <input name="note" placeholder="Motif (ex : dépense funérailles, dons...)" className="w-full border rounded-lg p-2" />
-        <button className="bg-emerald-700 text-white rounded-lg px-4 py-2 font-semibold">Enregistrer</button>
+      <form action={majCaisse} className="space-y-3 rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(28,28,23,.08)]">
+        <h2 className="font-semibold text-[#1C1C17]">Mettre à jour le solde</h2>
+        <input name="solde" type="number" step="0.01" required placeholder="Nouveau solde" className="w-full rounded-lg border border-[#E2DFD6] p-2" />
+        <input name="note" placeholder="Motif (ex : dépense funérailles, dons...)" className="w-full rounded-lg border border-[#E2DFD6] p-2" />
+        <button className="nf-btn-grad rounded-lg px-4 py-2 font-semibold text-white">Enregistrer</button>
       </form>
-      <div className="bg-white rounded-2xl p-4 shadow">
-        <h2 className="font-semibold mb-2">Historique</h2>
-        <ul className="divide-y text-sm">
+      <div className="rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(28,28,23,.08)]">
+        <h2 className="mb-2 font-semibold text-[#1C1C17]">Historique</h2>
+        <ul className="divide-y divide-[#E5E2D9] text-sm">
           {(historique ?? []).map((h) => (
             <li key={h.id} className="py-2">
               <span className="font-semibold">{Number(h.solde).toLocaleString("fr-FR")} €</span>
               {" · "}{new Date(h.maj_le).toLocaleString("fr-FR")} · {nom(h.maj_par)}
-              {h.note && <div className="text-gray-500">{h.note}</div>}
+              {h.note && <div className="text-[#6B6B60]">{h.note}</div>}
             </li>
           ))}
         </ul>

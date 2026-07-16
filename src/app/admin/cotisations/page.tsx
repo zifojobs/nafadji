@@ -1,7 +1,8 @@
 import { db } from "@/lib/db";
 import { getParametres } from "@/lib/requetes";
 import { calculerEtat } from "@/lib/cotisations";
-import { enregistrerCotisation, supprimerCotisation } from "../actions";
+import { supprimerCotisation } from "../actions";
+import { CotisationForm } from "./CotisationForm";
 
 export default async function AdminCotisations() {
   const [{ data: membres }, { data: cotisations }, params] = await Promise.all([
@@ -24,48 +25,40 @@ export default async function AdminCotisations() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold">Cotisations</h1>
+      <h1 className="text-xl font-bold text-[#1C1C17]">Cotisations</h1>
 
-      <form action={enregistrerCotisation} className="bg-white rounded-2xl p-4 shadow space-y-3">
-        <h2 className="font-semibold">Enregistrer un paiement</h2>
-        <select name="membre_id" required className="w-full border rounded-lg p-2">
-          <option value="">— Membre —</option>
-          {(membres ?? []).map((m) => <option key={m.id} value={m.id}>{m.nom_complet}</option>)}
-        </select>
-        <div className="flex gap-2 flex-wrap">
-          <input name="mois" type="month" defaultValue={moisCourant} required className="border rounded-lg p-2" />
-          <input name="montant" type="number" step="0.01" defaultValue={Number(params.montant_mensuel)} required className="w-24 border rounded-lg p-2" />
-          <input name="date_paiement" type="date" defaultValue={aujourdhui} required className="border rounded-lg p-2" />
-        </div>
-        <input name="note" placeholder="Note (optionnel)" className="w-full border rounded-lg p-2" />
-        <button className="bg-emerald-700 text-white rounded-lg px-4 py-2 font-semibold">Enregistrer</button>
-      </form>
+      <CotisationForm
+        membres={membres ?? []}
+        moisCourant={moisCourant}
+        montantDefaut={Number(params.montant_mensuel)}
+        aujourdhui={aujourdhui}
+      />
 
-      <div className="bg-white rounded-2xl p-4 shadow">
-        <h2 className="font-semibold mb-2">État des membres</h2>
-        <ul className="divide-y">
+      <div className="rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(28,28,23,.08)]">
+        <h2 className="mb-2 font-semibold text-[#1C1C17]">État des membres</h2>
+        <ul className="divide-y divide-[#E5E2D9]">
           {etats.map((m) => (
-            <li key={m.id} className="py-2 flex justify-between text-sm">
+            <li key={m.id} className="flex justify-between py-2 text-sm">
               <span>{m.nom_complet}</span>
               {m.etat.aJour
-                ? <span className="text-emerald-700 font-semibold">À jour ✓</span>
-                : <span className="text-red-700 font-semibold">{m.etat.moisEnRetard.length} mois — {m.etat.resteDu} €</span>}
+                ? <span className="font-semibold text-[#1E8A54]">À jour ✓</span>
+                : <span className="font-semibold text-[#B3402A]">{m.etat.moisEnRetard.length} mois — {m.etat.resteDu} €</span>}
             </li>
           ))}
         </ul>
       </div>
 
-      <div className="bg-white rounded-2xl p-4 shadow">
-        <h2 className="font-semibold mb-2">Derniers paiements</h2>
-        <ul className="divide-y text-sm">
+      <div className="rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(28,28,23,.08)]">
+        <h2 className="mb-2 font-semibold text-[#1C1C17]">Derniers paiements</h2>
+        <ul className="divide-y divide-[#E5E2D9] text-sm">
           {(cotisations ?? []).slice(0, 20).map((c) => (
-            <li key={c.id} className="py-2 flex justify-between items-center">
+            <li key={c.id} className="flex items-center justify-between py-2">
               <span>
                 {(membres ?? []).find((m) => m.id === c.membre_id)?.nom_complet ?? "?"} — {new Date(c.mois).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })} — {Number(c.montant)} €
               </span>
               <form action={supprimerCotisation}>
                 <input type="hidden" name="id" value={c.id} />
-                <button className="text-red-600 text-xs">Annuler</button>
+                <button className="text-xs text-[#B3402A]">Annuler</button>
               </form>
             </li>
           ))}
