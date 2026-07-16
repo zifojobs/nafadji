@@ -1,8 +1,11 @@
 @import "tailwindcss";
 
+/* Identité Nafadji : design clair chaud, FIXE — pas de mode sombre.
+   (Le scaffold basculait --foreground en blanc en dark mode OS → texte invisible.) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F2EFE8;
+  --foreground: #1C1C17;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -12,18 +15,18 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Champs de formulaire : encre toujours lisible, quel que soit le thème OS */
+input, select, textarea {
+  color: #1C1C17;
+  background-color: #ffffff;
+}
+::placeholder { color: #8A8A7E; }
 
 /* --- Design system Nafadji (préfixe nf-) --- */
 
