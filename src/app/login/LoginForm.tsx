@@ -11,7 +11,9 @@ export function LoginForm({ membres }: { membres: { id: string; nom_complet: str
       action={formAction}
       className="nf-pop relative w-full max-w-sm rounded-3xl bg-[#F7F5F0]/98 p-7 shadow-[0_24px_60px_rgba(0,0,0,.45),0_0_0_1px_rgba(227,178,60,.25)]"
     >
-      <Logo size={74} variante="sombre" />
+      <div className="flex justify-center">
+        <Logo size={74} variante="sombre" />
+      </div>
       <h1 className="nf-serif mt-3.5 text-center text-2xl font-bold tracking-wide text-[#0B3D2E]">
         Association Nafadji
       </h1>
