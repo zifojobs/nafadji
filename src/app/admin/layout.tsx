@@ -2,6 +2,9 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { AdminNav } from "./AdminNav";
 
+// Tout l'espace bureau lit la base à chaque visite (jamais figé au build).
+export const dynamic = "force-dynamic";
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh bg-[#F2EFE8]">
