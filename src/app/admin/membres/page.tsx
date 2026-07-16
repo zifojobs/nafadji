@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
-import { creerMembre, modifierMembre, definirCode } from "../actions";
+import { modifierMembre, definirCode } from "../actions";
+import { MembreForm } from "./MembreForm";
 
 export default async function AdminMembres() {
   const { data: membres } = await db.from("membres").select("*").order("nom_complet");
@@ -8,19 +9,7 @@ export default async function AdminMembres() {
     <div className="space-y-6">
       <h1 className="text-xl font-bold text-[#1C1C17]">Membres ({membres?.length ?? 0})</h1>
 
-      <form action={creerMembre} className="space-y-3 rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(28,28,23,.08)]">
-        <h2 className="font-semibold text-[#1C1C17]">Ajouter un membre</h2>
-        <input name="nom_complet" required placeholder="Nom complet" className="w-full rounded-lg border border-[#E2DFD6] p-2" />
-        <div className="flex gap-3">
-          <input name="telephone" placeholder="Téléphone (optionnel)" className="flex-1 rounded-lg border border-[#E2DFD6] p-2" />
-          <input name="date_adhesion" type="date" required className="rounded-lg border border-[#E2DFD6] p-2" />
-        </div>
-        <div className="flex items-center gap-3">
-          <input name="code" required placeholder="Code personnel initial" className="flex-1 rounded-lg border border-[#E2DFD6] p-2" />
-          <label className="flex items-center gap-1 text-sm"><input type="checkbox" name="is_admin" /> Bureau</label>
-        </div>
-        <button className="nf-btn-grad rounded-lg px-4 py-2 font-semibold text-white">Ajouter</button>
-      </form>
+      <MembreForm />
 
       <div className="space-y-3">
         {(membres ?? []).map((m) => (

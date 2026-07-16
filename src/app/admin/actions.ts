@@ -1,5 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { lireSession, type Session } from "@/lib/session";
@@ -10,17 +11,25 @@ async function exigerAdmin(): Promise<Session> {
   return s;
 }
 
-export async function creerMembre(formData: FormData) {
+export async function creerMembre(
+  _prev: { ok?: string; erreur?: string } | null,
+  formData: FormData,
+): Promise<{ ok?: string; erreur?: string } | null> {
   await exigerAdmin();
-  const code = String(formData.get("code"));
-  await db.from("membres").insert({
-    nom_complet: String(formData.get("nom_complet")).trim(),
+  const nom = String(formData.get("nom_complet")).trim();
+  // Code laissé vide → généré automatiquement (6 chiffres), affiché au bureau après création
+  const saisi = String(formData.get("code") ?? "").trim();
+  const code = saisi || String(crypto.randomInt(100000, 999999));
+  const { error } = await db.from("membres").insert({
+    nom_complet: nom,
     telephone: String(formData.get("telephone") ?? "").trim() || null,
     date_adhesion: String(formData.get("date_adhesion")),
     is_admin: formData.get("is_admin") === "on",
     code_hash: await bcrypt.hash(code, 10),
   });
+  if (error) return { erreur: error.message };
   revalidatePath("/admin/membres");
+  return { ok: `${nom} créé — code personnel : ${code} (à lui transmettre en privé)` };
 }
 
 export async function modifierMembre(formData: FormData) {
