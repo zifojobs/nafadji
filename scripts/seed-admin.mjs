@@ -1,8 +1,6 @@
-// scripts/seed-admin.mjs — usage : node scripts/seed-admin.mjs "Nom Complet" 1234 [--admin]
+// scripts/seed-admin.mjs — usage : node --env-file=.env.local scripts/seed-admin.mjs "Nom Complet" 1234 [--admin]
 import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcryptjs";
-import { config } from "dotenv";
-config({ path: ".env.local" });
 
 const [nom, code] = process.argv.slice(2);
 const isAdmin = process.argv.includes("--admin");
