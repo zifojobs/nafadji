@@ -24,3 +24,34 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* --- Design system Nafadji (préfixe nf-) --- */
+
+@keyframes nf-pop {
+  from { opacity: 0; transform: translateY(16px) scale(.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes nf-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+.nf-serif { font-family: Georgia, "Times New Roman", serif; }
+.nf-pop { animation: nf-pop .5s cubic-bezier(.2,.9,.3,1.2); }
+.nf-up { animation: nf-up .45s cubic-bezier(.2,.8,.3,1) both; }
+.nf-up-1 { animation-delay: .07s; }
+.nf-up-2 { animation-delay: .14s; }
+.nf-up-3 { animation-delay: .21s; }
+
+.nf-radial-login { background: radial-gradient(120% 90% at 20% 0%, #12523E 0%, #0B3D2E 45%, #052419 100%); }
+.nf-radial-hero { background: radial-gradient(140% 120% at 80% -20%, #12523E 0%, #0B3D2E 55%, #062A1F 100%); }
+.nf-motif {
+  background-image:
+    repeating-linear-gradient(45deg, #E3B23C 0 1.5px, transparent 1.5px 22px),
+    repeating-linear-gradient(-45deg, #E3B23C 0 1.5px, transparent 1.5px 22px);
+}
+.nf-btn-grad { background: linear-gradient(160deg, #12523E, #0B3D2E); }
+.nf-caisse-grad { background: linear-gradient(150deg, #0B3D2E, #062A1F); }
+.nf-statut-ok { background: linear-gradient(150deg, #2FBF71, #1E8A54); }
+.nf-statut-retard { background: linear-gradient(150deg, #B3402A, #7A2C1C); }
+.nf-filet { height: 3px; width: 44px; margin: 18px auto 0; border-radius: 2px; background: linear-gradient(90deg, #E3B23C, #C89428); }
