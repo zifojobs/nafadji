@@ -7,19 +7,21 @@ export async function getParametres() {
   return data!;
 }
 
-export async function getEtatMembre(membreId: string): Promise<EtatCotisations & { paiements: { mois: string; montant: number; date_paiement: string }[] }> {
-  const [{ data: membre }, { data: paiements }, parametres] = await Promise.all([
+export async function getEtatMembre(membreId: string): Promise<EtatCotisations & { versements: { montant: number; date_paiement: string; note: string | null }[] }> {
+  const [{ data: membre }, { data: versements }, { data: suspensions }, parametres] = await Promise.all([
     db.from("membres").select("date_adhesion").eq("id", membreId).single(),
-    db.from("cotisations").select("mois, montant, date_paiement").eq("membre_id", membreId).order("mois"),
+    db.from("cotisations").select("montant, date_paiement, note").eq("membre_id", membreId).order("date_paiement", { ascending: false }),
+    db.from("suspensions").select("debut, fin").eq("membre_id", membreId),
     getParametres(),
   ]);
   const etat = calculerEtat({
     dateAdhesion: membre!.date_adhesion,
-    paiements: (paiements ?? []).map((p) => ({ mois: p.mois, montant: Number(p.montant) })),
+    versements: (versements ?? []).map((v) => ({ montant: Number(v.montant) })),
+    suspensions: suspensions ?? [],
     montantMensuel: Number(parametres.montant_mensuel),
     aujourdhui: new Date().toISOString().slice(0, 10),
   });
-  return { ...etat, paiements: paiements ?? [] };
+  return { ...etat, versements: versements ?? [] };
 }
 
 export async function getProchaineReunion() {
@@ -57,4 +59,19 @@ export async function getPVs() {
       return { ...r, fichier: f ? { nom: f.nom, url: await getUrlFichierPV(f.chemin) } : null };
     }),
   );
+}
+
+// Journal des dons et dépenses + total des sorties par année (transparence).
+export async function getMouvements() {
+  const { data } = await db.from("mouvements").select("*").order("date_mouvement", { ascending: false });
+  const mouvements = data ?? [];
+  const totaux = new Map<string, number>();
+  for (const m of mouvements) {
+    const annee = String(m.date_mouvement).slice(0, 4);
+    totaux.set(annee, (totaux.get(annee) ?? 0) + Number(m.montant));
+  }
+  return {
+    mouvements,
+    totauxParAnnee: [...totaux.entries()].sort((a, b) => b[0].localeCompare(a[0])),
+  };
 }
