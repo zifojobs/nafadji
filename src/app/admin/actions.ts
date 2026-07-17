@@ -9,6 +9,8 @@ import { creerUrlUploadPV, supprimerFichiersPV, EXTENSIONS_PV, TAILLE_MAX_PV } f
 async function exigerAdmin(): Promise<Session> {
   const s = await lireSession();
   if (!s?.isAdmin) throw new Error("Accès refusé");
+  const { data: membre } = await db.from("membres").select("actif").eq("id", s.membreId).single();
+  if (!membre?.actif) throw new Error("Accès refusé");
   return s;
 }
 
@@ -40,7 +42,6 @@ export async function modifierMembre(formData: FormData) {
     telephone: String(formData.get("telephone") ?? "").trim() || null,
     date_adhesion: String(formData.get("date_adhesion")),
     is_admin: formData.get("is_admin") === "on",
-    actif: formData.get("actif") === "on",
   }).eq("id", String(formData.get("id")));
   revalidatePath("/admin/membres");
 }
@@ -55,17 +56,16 @@ export async function definirCode(formData: FormData) {
 
 export type CotisationState = { erreur?: string } | null;
 
-export async function enregistrerCotisation(_prevState: CotisationState, formData: FormData): Promise<CotisationState> {
+export async function enregistrerVersement(_prevState: CotisationState, formData: FormData): Promise<CotisationState> {
   await exigerAdmin();
-  const mois = String(formData.get("mois")) + "-01"; // input type=month → "YYYY-MM"
+  const montant = Number(formData.get("montant"));
+  if (!(montant > 0)) return { erreur: "Le montant doit être supérieur à 0." };
   const { error } = await db.from("cotisations").insert({
     membre_id: String(formData.get("membre_id")),
-    mois,
-    montant: Number(formData.get("montant")),
+    montant,
     date_paiement: String(formData.get("date_paiement")),
     note: String(formData.get("note") ?? "").trim() || null,
   });
-  if (error?.code === "23505") return { erreur: "Ce mois est déjà payé pour ce membre." };
   if (error) return { erreur: error.message };
   revalidatePath("/admin/cotisations");
   return null;
@@ -153,6 +153,24 @@ export async function majCaisse(formData: FormData) {
   revalidatePath("/admin/caisse");
 }
 
+export async function ajouterMouvement(formData: FormData) {
+  const session = await exigerAdmin();
+  await db.from("mouvements").insert({
+    type: String(formData.get("type")),
+    libelle: String(formData.get("libelle")).trim(),
+    montant: Number(formData.get("montant")),
+    date_mouvement: String(formData.get("date_mouvement")),
+    cree_par: session.membreId,
+  });
+  revalidatePath("/admin/caisse");
+}
+
+export async function supprimerMouvement(formData: FormData) {
+  await exigerAdmin();
+  await db.from("mouvements").delete().eq("id", String(formData.get("id")));
+  revalidatePath("/admin/caisse");
+}
+
 export async function majParametres(formData: FormData) {
   await exigerAdmin();
   await db.from("parametres").update({
@@ -175,8 +193,33 @@ export async function supprimerMembre(
   // dans l'historique de caisse (on ne réécrit pas l'historique).
   const { error } = await db.from("membres").delete().eq("id", id);
   if (error?.code === "23503")
-    return { erreur: "Ce membre apparaît dans l'historique de caisse — désactivez-le plutôt (décocher « Actif »)." };
+    return { erreur: "Ce membre apparaît dans l'historique de caisse — suspendez-le plutôt." };
   if (error) return { erreur: error.message };
   revalidatePath("/admin/membres");
   return null;
+}
+
+export async function suspendreMembre(
+  _prev: { erreur?: string } | null,
+  formData: FormData,
+): Promise<{ erreur?: string } | null> {
+  const session = await exigerAdmin();
+  const id = String(formData.get("id"));
+  if (id === session.membreId)
+    return { erreur: "Vous ne pouvez pas suspendre votre propre compte." };
+  // La période de suspension gèle la dette ; actif=false coupe l'accès à l'appli.
+  const { error } = await db.from("suspensions").insert({ membre_id: id, cree_par: session.membreId });
+  if (error) return { erreur: error.message };
+  await db.from("membres").update({ actif: false }).eq("id", id);
+  revalidatePath("/admin/membres");
+  return null;
+}
+
+export async function reactiverMembre(formData: FormData) {
+  await exigerAdmin();
+  const id = String(formData.get("id"));
+  await db.from("suspensions").update({ fin: new Date().toISOString().slice(0, 10) })
+    .eq("membre_id", id).is("fin", null);
+  await db.from("membres").update({ actif: true }).eq("id", id);
+  revalidatePath("/admin/membres");
 }
