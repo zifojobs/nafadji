@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { lireSession } from "@/lib/session";
-import { getEtatMembre, getProchaineReunion, getDernierPV, getCaisse, getParametres } from "@/lib/requetes";
+import { getEtatMembre, getProchaineReunion, getDernierPV, getCaisse } from "@/lib/requetes";
 
 const fmtDate = (d: string) => new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 
 export default async function Accueil() {
   const session = (await lireSession())!;
-  const [etat, reunion, pv, caisse, params] = await Promise.all([
-    getEtatMembre(session.membreId), getProchaineReunion(), getDernierPV(), getCaisse(), getParametres(),
+  const [etat, reunion, pv, caisse] = await Promise.all([
+    getEtatMembre(session.membreId), getProchaineReunion(), getDernierPV(), getCaisse(),
   ]);
 
   return (
@@ -17,9 +17,9 @@ export default async function Accueil() {
         className={`nf-up rounded-[20px] p-4.5 text-white shadow-[0_8px_24px_rgba(28,28,23,.12)] ${etat.aJour ? "nf-statut-ok" : "nf-statut-retard"}`}
       >
         <div className="text-[11px] uppercase tracking-[.14em] opacity-70">Mes cotisations</div>
-        <div className="mt-1.5 text-lg font-extrabold">{etat.aJour ? "À jour" : `En retard (${etat.moisEnRetard.length} mois)`}</div>
+        <div className="mt-1.5 text-lg font-extrabold">{etat.aJour ? "À jour" : `En retard (${etat.moisRetard} mois)`}</div>
         <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/18 px-3 py-1 text-[12.5px] font-bold">
-          {etat.aJour ? "✓ à jour" : `Reste dû : ${etat.resteDu} ${params.devise === "EUR" ? "€" : params.devise}`}
+          {etat.solde < 0 ? `Dette : ${(-etat.solde).toLocaleString("fr-FR")} €` : etat.solde > 0 ? `Avance : +${etat.solde.toLocaleString("fr-FR")} €` : "✓ à jour"}
         </span>
       </Link>
 
