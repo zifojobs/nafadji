@@ -1,27 +1,39 @@
-// Emblème officiel ADN (Association pour le Développement de Nafadji) :
-// case traditionnelle à toit de chaume dans un cercle — redessiné en vectoriel
-// depuis le logo fourni par le bureau (LOGO.jpeg), adapté à la palette de l'appli.
+/* eslint-disable @next/next/no-img-element */
+// Emblème officiel ADN : l'artwork ORIGINAL fourni par le bureau (LOGO.jpeg),
+// découpé au cercle et détouré — la forme de la case n'est pas retouchée.
+// public/logo-adn.png = cercle noir + case blanche, fond transparent.
 type LogoProps = {
   size?: number;
-  /** "sombre" = cercle plein vert foncé (fond clair) · "claire" = cercle translucide (fond vert foncé, ex. hero) */
+  /** "sombre" = tel quel (fonds clairs) · "claire" = posé sur une pastille crème (fonds vert foncé/encre) */
   variante?: "sombre" | "claire";
 };
 
 export function Logo({ size = 40, variante = "sombre" }: LogoProps) {
-  const cercleFill = variante === "sombre" ? "#0B3D2E" : "rgba(247,245,240,.1)";
-  const cercleStrokeWidth = variante === "sombre" ? 1.5 : 2;
-  const case_ = "#F7F5F0";
-
+  const img = (
+    <img
+      src="/logo-adn.png"
+      alt="Logo ADN"
+      width={size}
+      height={size}
+      style={{ display: "block", width: size, height: size }}
+    />
+  );
+  if (variante === "sombre") return img;
+  // Sur fond sombre : pastille crème derrière l'emblème (l'artwork lui-même reste intact)
   return (
-    <svg viewBox="0 0 100 100" width={size} height={size} aria-hidden="true">
-      <circle cx="50" cy="50" r="48" fill={cercleFill} stroke="#E3B23C" strokeWidth={cercleStrokeWidth} />
-      {/* Toit de chaume en 3 étages, comme sur le logo original */}
-      <polygon points="50,14 61.1,30 38.9,30" fill={case_} />
-      <polygon points="36.2,34 63.8,34 73.5,48 26.5,48" fill={case_} />
-      <polygon points="23.7,52 76.3,52 86,66 14,66" fill={case_} />
-      {/* Corps de la case + porte */}
-      <rect x="30" y="66" width="40" height="24" fill={case_} />
-      <rect x="44" y="74" width="12" height="16" fill="#0B3D2E" />
-    </svg>
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        background: "#F7F5F0",
+        boxShadow: "0 0 0 1.5px #E3B23C",
+      }}
+    >
+      <img src="/logo-adn.png" alt="Logo ADN" width={Math.round(size * 0.98)} height={Math.round(size * 0.98)} style={{ display: "block" }} />
+    </span>
   );
 }
