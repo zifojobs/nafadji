@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Association Nafadji",
+    name: "ADN — Association pour le Développement de Nafadji",
     short_name: "Nafadji",
-    description: "Gestion de l'association Nafadji — cotisations, réunions, procès-verbaux",
+    description: "Gestion de l'ADN (Association pour le Développement de Nafadji) — cotisations, réunions, procès-verbaux",
     start_url: "/",
     display: "standalone",
     background_color: "#0B3D2E",

@@ -15,10 +15,10 @@ export function LoginForm({ membres }: { membres: { id: string; nom_complet: str
         <Logo size={74} variante="sombre" />
       </div>
       <h1 className="nf-serif mt-3.5 text-center text-2xl font-bold tracking-wide text-[#0B3D2E]">
-        Association Nafadji
+        ADN
       </h1>
       <p className="mb-6 mt-2 text-center text-[10.5px] uppercase tracking-[.24em] text-[#9A8B5E]">
-        Diaspora
+        Association pour le Développement de Nafadji
       </p>
 
       {state?.erreur && (

@@ -18,7 +18,7 @@ export default async function MembreLayout({ children }: { children: React.React
         <div className="relative mb-4.5 flex items-center justify-between">
           <span className="nf-serif flex items-center gap-2.5 text-[17px] font-bold tracking-wide">
             <Logo size={30} variante="claire" />
-            Nafadji
+            ADN
           </span>
           <div className="flex items-center gap-3 text-[12.5px]">
             {session.isAdmin && <Link href="/admin" className="text-white/75 underline">Espace bureau</Link>}

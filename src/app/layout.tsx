@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Association Nafadji",
-  description: "Gestion de l'association Nafadji — cotisations, réunions, procès-verbaux",
+  title: "ADN — Association pour le Développement de Nafadji",
+  description: "Gestion de l'ADN (Association pour le Développement de Nafadji) — cotisations, réunions, procès-verbaux",
   icons: {
     icon: [
       { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },

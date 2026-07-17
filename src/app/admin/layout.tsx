@@ -11,7 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <header className="flex items-center justify-between bg-[#1C1C17] p-4 text-white">
         <span className="nf-serif flex items-center gap-2.5 font-bold">
           <Logo size={26} variante="claire" />
-          Nafadji — Bureau
+          ADN — Bureau
         </span>
         <Link href="/" className="text-sm text-white/75 underline">← Espace membre</Link>
       </header>
