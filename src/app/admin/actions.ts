@@ -140,17 +140,21 @@ export async function supprimerReunion(formData: FormData) {
   revaliderPV();
 }
 
-export async function majCaisse(formData: FormData) {
+export type CaisseState = { ok?: string; erreur?: string } | null;
+
+export async function majCaisse(_prev: CaisseState, formData: FormData): Promise<CaisseState> {
   const session = await exigerAdmin();
   const solde = Number(formData.get("solde"));
+  if (!Number.isFinite(solde)) return { erreur: "Montant invalide." };
   const note = String(formData.get("note") ?? "").trim() || null;
   const maintenant = new Date().toISOString();
 
   const { error } = await db.from("caisse")
     .update({ solde, maj_le: maintenant, maj_par: session.membreId }).eq("id", 1);
-  if (error) throw new Error(error.message);
+  if (error) return { erreur: error.message };
   await db.from("caisse_historique").insert({ solde, maj_le: maintenant, maj_par: session.membreId, note });
   revalidatePath("/admin/caisse");
+  return { ok: `Montant enregistré : ${solde.toLocaleString("fr-FR")} € ✓` };
 }
 
 export async function ajouterMouvement(formData: FormData) {

@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { getCaisse, getMouvements } from "@/lib/requetes";
-import { majCaisse, ajouterMouvement, supprimerMouvement } from "../actions";
+import { ajouterMouvement, supprimerMouvement } from "../actions";
+import { MajCaisseForm } from "./MajCaisseForm";
 
 export default async function AdminCaisse() {
   const [caisse, { mouvements, totauxParAnnee }, { data: historique }, { data: membres }] = await Promise.all([
@@ -20,12 +21,7 @@ export default async function AdminCaisse() {
         <div className="nf-serif text-3xl font-bold text-[#E3B23C]">{Number(caisse.solde).toLocaleString("fr-FR")} €</div>
       </div>
 
-      <form action={majCaisse} className="space-y-3 rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(28,28,23,.08)]">
-        <h2 className="font-semibold text-[#1C1C17]">Mettre à jour le montant en banque</h2>
-        <input name="solde" type="number" step="0.01" required placeholder="Montant sur le compte" className="w-full rounded-lg border border-[#E2DFD6] p-2" />
-        <input name="note" placeholder="Note (optionnel)" className="w-full rounded-lg border border-[#E2DFD6] p-2" />
-        <button className="nf-btn-grad rounded-lg px-4 py-2 font-semibold text-white">Enregistrer</button>
-      </form>
+      <MajCaisseForm />
 
       <form action={ajouterMouvement} className="space-y-3 rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(28,28,23,.08)]">
         <h2 className="font-semibold text-[#1C1C17]">Ajouter un don ou une dépense</h2>
