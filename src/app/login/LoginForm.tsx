@@ -56,7 +56,7 @@ export function LoginForm({ membres }: { membres: { id: string; nom_complet: str
         {pending ? "Connexion…" : "Se connecter"}
       </button>
       <div className="nf-filet" />
-      <p className="mt-3.5 text-center text-xs text-[#6B6B60]">Code oublié ? Contactez un membre du bureau.</p>
+      <p className="mt-3.5 text-center text-xs text-[#6B6B60]">Code oublié ? Contactez Bangaly Danfakha.</p>
     </form>
   );
 }
