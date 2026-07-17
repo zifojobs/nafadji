@@ -1,10 +1,19 @@
 import { db } from "@/lib/db";
-import { modifierMembre, definirCode } from "../actions";
+import { getParametres } from "@/lib/requetes";
+import { calculerEtat } from "@/lib/cotisations";
+import { modifierMembre, definirCode, reactiverMembre } from "../actions";
 import { MembreForm } from "./MembreForm";
 import { SupprimerMembre } from "./SupprimerMembre";
+import { SuspendreMembre } from "./SuspendreMembre";
 
 export default async function AdminMembres() {
-  const { data: membres } = await db.from("membres").select("*").order("nom_complet");
+  const [{ data: membres }, { data: versements }, { data: suspensions }, params] = await Promise.all([
+    db.from("membres").select("*").order("nom_complet"),
+    db.from("cotisations").select("membre_id, montant"),
+    db.from("suspensions").select("membre_id, debut, fin"),
+    getParametres(),
+  ]);
+  const aujourdhui = new Date().toISOString().slice(0, 10);
 
   return (
     <div className="space-y-6">
@@ -13,35 +22,55 @@ export default async function AdminMembres() {
       <MembreForm />
 
       <div className="space-y-3">
-        {(membres ?? []).map((m) => (
-          <details key={m.id} className="rounded-2xl bg-white p-3 shadow-[0_2px_10px_rgba(28,28,23,.08)]">
-            <summary className="flex cursor-pointer justify-between">
-              <span className={m.actif ? "" : "text-[#9A9A90] line-through"}>
-                {m.nom_complet} {m.is_admin && <span className="rounded bg-[#1C1C17] px-1 text-xs text-white">bureau</span>}
-              </span>
-              <span className="text-sm text-[#6B6B60]">adhésion {new Date(m.date_adhesion).toLocaleDateString("fr-FR")}</span>
-            </summary>
-            <form action={modifierMembre} className="mt-3 space-y-2 border-t border-[#E5E2D9] pt-3">
-              <input type="hidden" name="id" value={m.id} />
-              <input name="nom_complet" defaultValue={m.nom_complet} className="w-full rounded-lg border border-[#E2DFD6] p-2" />
-              <div className="flex gap-2">
-                <input name="telephone" defaultValue={m.telephone ?? ""} placeholder="Téléphone" className="flex-1 rounded-lg border border-[#E2DFD6] p-2" />
-                <input name="date_adhesion" type="date" defaultValue={m.date_adhesion} className="rounded-lg border border-[#E2DFD6] p-2" />
-              </div>
-              <div className="flex gap-4 text-sm">
-                <label className="flex items-center gap-1"><input type="checkbox" name="is_admin" defaultChecked={m.is_admin} /> Bureau</label>
-                <label className="flex items-center gap-1"><input type="checkbox" name="actif" defaultChecked={m.actif} /> Actif</label>
-              </div>
-              <button className="rounded-lg bg-[#1C1C17] px-3 py-1.5 text-sm text-white">Enregistrer</button>
-            </form>
-            <form action={definirCode} className="mt-2 flex gap-2">
-              <input type="hidden" name="id" value={m.id} />
-              <input name="code" required placeholder="Nouveau code" className="flex-1 rounded-lg border border-[#E2DFD6] p-2 text-sm" />
-              <button className="rounded-lg bg-[#E3B23C] px-3 text-sm font-semibold text-[#1C1C17]">Réinitialiser le code</button>
-            </form>
-            <SupprimerMembre id={m.id} nom={m.nom_complet} />
-          </details>
-        ))}
+        {(membres ?? []).map((m) => {
+          const etat = calculerEtat({
+            dateAdhesion: m.date_adhesion,
+            versements: (versements ?? []).filter((v) => v.membre_id === m.id).map((v) => ({ montant: Number(v.montant) })),
+            suspensions: (suspensions ?? []).filter((s) => s.membre_id === m.id),
+            montantMensuel: Number(params.montant_mensuel),
+            aujourdhui,
+          });
+          return (
+            <details key={m.id} className="rounded-2xl bg-white p-3 shadow-[0_2px_10px_rgba(28,28,23,.08)]">
+              <summary className="flex cursor-pointer flex-wrap items-center justify-between gap-1.5">
+                <span className={m.actif ? "" : "text-[#9A9A90] line-through"}>
+                  {m.nom_complet} {m.is_admin && <span className="rounded bg-[#1C1C17] px-1 text-xs text-white">bureau</span>}
+                  {!m.actif && <span className="ml-1 rounded bg-[#9A9A90] px-1 text-xs text-white">Suspendu</span>}
+                  {m.actif && etat.moisRetard >= 3 && (
+                    <span className="ml-1 rounded bg-[#FBEAE5] px-1 text-xs font-semibold text-[#B3402A]">⚠ {etat.moisRetard} mois de retard</span>
+                  )}
+                </span>
+                <span className="text-sm text-[#6B6B60]">adhésion {new Date(m.date_adhesion).toLocaleDateString("fr-FR")}</span>
+              </summary>
+              <form action={modifierMembre} className="mt-3 space-y-2 border-t border-[#E5E2D9] pt-3">
+                <input type="hidden" name="id" value={m.id} />
+                <input name="nom_complet" defaultValue={m.nom_complet} className="w-full rounded-lg border border-[#E2DFD6] p-2" />
+                <div className="flex gap-2">
+                  <input name="telephone" defaultValue={m.telephone ?? ""} placeholder="Téléphone" className="flex-1 rounded-lg border border-[#E2DFD6] p-2" />
+                  <input name="date_adhesion" type="date" defaultValue={m.date_adhesion} className="rounded-lg border border-[#E2DFD6] p-2" />
+                </div>
+                <div className="flex gap-4 text-sm">
+                  <label className="flex items-center gap-1"><input type="checkbox" name="is_admin" defaultChecked={m.is_admin} /> Bureau</label>
+                </div>
+                <button className="rounded-lg bg-[#1C1C17] px-3 py-1.5 text-sm text-white">Enregistrer</button>
+              </form>
+              <form action={definirCode} className="mt-2 flex gap-2">
+                <input type="hidden" name="id" value={m.id} />
+                <input name="code" required placeholder="Nouveau code" className="flex-1 rounded-lg border border-[#E2DFD6] p-2 text-sm" />
+                <button className="rounded-lg bg-[#E3B23C] px-3 text-sm font-semibold text-[#1C1C17]">Réinitialiser le code</button>
+              </form>
+              {m.actif ? (
+                <SuspendreMembre id={m.id} />
+              ) : (
+                <form action={reactiverMembre} className="mt-2">
+                  <input type="hidden" name="id" value={m.id} />
+                  <button className="rounded-lg bg-[#1E8A54] px-3 py-1.5 text-sm font-semibold text-white">Réactiver</button>
+                </form>
+              )}
+              <SupprimerMembre id={m.id} nom={m.nom_complet} />
+            </details>
+          );
+        })}
       </div>
     </div>
   );
