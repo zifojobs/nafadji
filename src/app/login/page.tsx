@@ -12,7 +12,10 @@ export default async function LoginPage() {
   return (
     <main className="nf-radial-login relative flex min-h-dvh items-center justify-center p-5">
       <div className="nf-motif pointer-events-none fixed inset-0 opacity-5" />
-      <LoginForm membres={membres ?? []} />
+      <div className="w-full max-w-sm">
+        <LoginForm membres={membres ?? []} />
+        <p className="mt-4 text-center text-[12.5px] text-white/60">Code oublié ? Contactez Bangaly Danfakha.</p>
+      </div>
     </main>
   );
 }
