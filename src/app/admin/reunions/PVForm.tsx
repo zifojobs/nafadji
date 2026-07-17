@@ -15,6 +15,7 @@ export function PVForm({
   const [pending, setPending] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
+  const [nomChoisi, setNomChoisi] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const fichierRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -47,6 +48,7 @@ export function PVForm({
       const resTexte = await enregistrerTextePV(reunionId, texte);
       if (resTexte?.erreur) throw new Error(resTexte.erreur);
       if (fichierRef.current) fichierRef.current.value = "";
+      setNomChoisi(null);
       setOk(true);
     } catch (err) {
       setErreur(err instanceof Error ? err.message : "Une erreur est survenue.");
@@ -79,11 +81,40 @@ export function PVForm({
           <button type="button" onClick={onRetirerFichier} disabled={pending} className="ml-auto text-xs text-[#B3402A]">Retirer</button>
         </div>
       )}
-      <div className="text-sm text-[#6B6B60]">
-        <label className="block font-medium text-[#1C1C17]">
-          {fichier ? "Remplacer le fichier (PDF, Word ou photo, 10 Mo max)" : "Ou joindre un fichier (PDF, Word ou photo, 10 Mo max)"}
-        </label>
-        <input ref={fichierRef} type="file" name="pv_fichier" accept={ACCEPT} className="mt-1 w-full text-sm" />
+      <div className="text-sm">
+        <input
+          ref={fichierRef}
+          type="file"
+          name="pv_fichier"
+          accept={ACCEPT}
+          className="hidden"
+          onChange={(e) => setNomChoisi(e.currentTarget.files?.[0]?.name ?? null)}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => fichierRef.current?.click()}
+            disabled={pending}
+            className="inline-flex items-center gap-1.5 rounded-lg border-2 border-[#0B3D2E] px-3 py-1.5 text-sm font-semibold text-[#0B3D2E] disabled:opacity-60"
+          >
+            📎 {fichier ? "Remplacer le fichier" : "Joindre un fichier"}
+          </button>
+          {nomChoisi ? (
+            <span className="flex items-center gap-1.5 font-medium text-[#1C1C17]">
+              {nomChoisi}
+              <button
+                type="button"
+                onClick={() => { if (fichierRef.current) fichierRef.current.value = ""; setNomChoisi(null); }}
+                aria-label="Annuler le fichier choisi"
+                className="text-[#B3402A]"
+              >
+                ✕
+              </button>
+            </span>
+          ) : (
+            <span className="text-[#6B6B60]">PDF, Word ou photo — 10 Mo max</span>
+          )}
+        </div>
       </div>
       <button disabled={pending} className="nf-btn-grad rounded-lg px-3 py-1.5 text-sm text-white disabled:opacity-60">
         {pending ? "Enregistrement…" : "Enregistrer le PV"}
