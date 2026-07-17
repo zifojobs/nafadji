@@ -34,11 +34,11 @@ export default async function Accueil() {
         {pv && <div className="mt-1 line-clamp-2 text-sm text-[#6B6B60]">{pv.pv_texte ?? `📎 ${pv.fichier?.nom ?? "Fichier joint"}`}</div>}
       </Link>
 
-      <div className="nf-up nf-up-3 nf-caisse-grad rounded-[20px] border border-[#E3B23C]/35 p-4.5 text-white">
-        <div className="text-[11px] uppercase tracking-[.14em] text-white/60">Caisse de l&apos;association</div>
+      <Link href="/caisse" className="nf-up nf-up-3 nf-caisse-grad rounded-[20px] border border-[#E3B23C]/35 p-4.5 text-white">
+        <div className="text-[11px] uppercase tracking-[.14em] text-white/60">Caisse de l&apos;association →</div>
         <div className="nf-serif mt-1.5 text-[30px] font-bold text-[#E3B23C]">{Number(caisse.solde).toLocaleString("fr-FR")} €</div>
         <div className="mt-1 text-xs text-white/65">Mis à jour le {fmtDate(caisse.maj_le)}</div>
-      </div>
+      </Link>
     </div>
   );
 }
