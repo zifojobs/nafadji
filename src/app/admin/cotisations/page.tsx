@@ -56,7 +56,7 @@ export default async function AdminCotisations() {
           {(versements ?? []).slice(0, 20).map((v) => (
             <li key={v.id} className="flex items-center justify-between py-2">
               <span>
-                {(membres ?? []).find((m) => m.id === v.membre_id)?.nom_complet ?? "?"} — {Number(v.montant)} € — le {new Date(v.date_paiement).toLocaleDateString("fr-FR")}
+                {(membres ?? []).find((m) => m.id === v.membre_id)?.nom_complet ?? "?"} — {Number(v.montant).toLocaleString("fr-FR")} € — le {new Date(v.date_paiement).toLocaleDateString("fr-FR")}
                 {v.note && <span className="text-[#6B6B60]"> · {v.note}</span>}
               </span>
               <form action={supprimerCotisation}>

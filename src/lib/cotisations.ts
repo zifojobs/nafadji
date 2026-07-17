@@ -17,6 +17,10 @@ export function calculerEtat(args: {
   dateAdhesion: string; versements: Versement[]; suspensions?: Suspension[];
   montantMensuel: number; aujourdhui: string;
 }): EtatCotisations {
+  if (!(args.montantMensuel > 0)) {
+    const totalVerse = args.versements.reduce((s, v) => s + v.montant, 0);
+    return { moisDus: [], totalVerse, solde: totalVerse, moisRetard: 0, aJour: true, aJourJusqua: null };
+  }
   const [ya, ma] = args.dateAdhesion.split("-").map(Number);
   const [yn, mn] = args.aujourdhui.split("-").map(Number);
   const suspensions = args.suspensions ?? [];

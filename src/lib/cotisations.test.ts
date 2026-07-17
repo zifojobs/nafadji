@@ -82,4 +82,12 @@ describe("calculerEtat (modèle solde)", () => {
     expect(e.solde).toBe(-20);
     expect(e.moisRetard).toBe(1);
   });
+
+  it("montant mensuel invalide (0) : pas de boucle infinie, membre traité à jour", () => {
+    const e = calculerEtat({ dateAdhesion: "2026-01-01", versements: [{ montant: 40 }], montantMensuel: 0, aujourdhui: "2026-07-16" });
+    expect(e.solde).toBe(40);
+    expect(e.aJour).toBe(true);
+    expect(e.aJourJusqua).toBeNull();
+    expect(e.moisRetard).toBe(0);
+  });
 });

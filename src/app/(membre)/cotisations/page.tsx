@@ -41,7 +41,7 @@ export default async function Cotisations() {
           {etat.versements.map((v, i) => (
             <li key={i} className="flex justify-between py-2">
               <span>{fmtDate(v.date_paiement)}{v.note ? <span className="text-[#6B6B60]"> · {v.note}</span> : null}</span>
-              <span className="font-semibold">{Number(v.montant)} €</span>
+              <span className="font-semibold">{Number(v.montant).toLocaleString("fr-FR")} €</span>
             </li>
           ))}
         </ul>
