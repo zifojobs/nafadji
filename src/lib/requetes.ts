@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { calculerEtat, type EtatCotisations } from "@/lib/cotisations";
+import { getFichierPV, getIdsAvecFichierPV, getUrlFichierPV } from "@/lib/pv";
 
 export async function getParametres() {
   const { data } = await db.from("parametres").select("*").eq("id", 1).single();
@@ -28,9 +29,8 @@ export async function getProchaineReunion() {
 }
 
 export async function getDernierPV() {
-  const { data } = await db.from("reunions").select("*")
-    .not("pv_texte", "is", null).order("date_reunion", { ascending: false }).limit(1);
-  return data?.[0] ?? null;
+  const pvs = await getPVs();
+  return pvs[0] ?? null;
 }
 
 export async function getCaisse() {
@@ -43,8 +43,18 @@ export async function getReunions() {
   return data ?? [];
 }
 
+// Un PV existe s'il a du texte OU un fichier joint (bucket "pv")
 export async function getPVs() {
-  const { data } = await db.from("reunions").select("id, date_reunion, lieu, pv_texte")
-    .not("pv_texte", "is", null).order("date_reunion", { ascending: false });
-  return data ?? [];
+  const [{ data }, idsAvecFichier] = await Promise.all([
+    db.from("reunions").select("id, date_reunion, lieu, pv_texte").order("date_reunion", { ascending: false }),
+    getIdsAvecFichierPV(),
+  ]);
+  const avecPV = (data ?? []).filter((r) => r.pv_texte || idsAvecFichier.has(r.id));
+  return Promise.all(
+    avecPV.map(async (r) => {
+      if (!idsAvecFichier.has(r.id)) return { ...r, fichier: null };
+      const f = await getFichierPV(r.id);
+      return { ...r, fichier: f ? { nom: f.nom, url: await getUrlFichierPV(f.chemin) } : null };
+    }),
+  );
 }

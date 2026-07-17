@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { lireSession, type Session } from "@/lib/session";
+import { creerUrlUploadPV, supprimerFichiersPV, EXTENSIONS_PV, TAILLE_MAX_PV } from "@/lib/pv";
 
 async function exigerAdmin(): Promise<Session> {
   const s = await lireSession();
@@ -96,18 +97,47 @@ export async function modifierReunion(formData: FormData) {
   revalidatePath("/admin/reunions");
 }
 
-export async function redigerPV(formData: FormData) {
-  await exigerAdmin();
-  await db.from("reunions")
-    .update({ pv_texte: String(formData.get("pv_texte")).trim() || null })
-    .eq("id", String(formData.get("id")));
+function revaliderPV() {
   revalidatePath("/admin/reunions");
+  revalidatePath("/pv");
+  revalidatePath("/");
+}
+
+export async function enregistrerTextePV(reunionId: string, texte: string): Promise<{ erreur?: string } | null> {
+  await exigerAdmin();
+  const { error } = await db.from("reunions")
+    .update({ pv_texte: texte.trim() || null })
+    .eq("id", reunionId);
+  if (error) return { erreur: error.message };
+  revaliderPV();
+  return null;
+}
+
+// L'upload part directement du navigateur vers Supabase (URL signée) :
+// le corps des requêtes Vercel est plafonné à ~4,5 Mo, trop peu pour une photo de PV.
+export async function preparerUploadPV(reunionId: string, nomFichier: string, taille: number): Promise<{ url?: string; erreur?: string }> {
+  await exigerAdmin();
+  const ext = nomFichier.slice(nomFichier.lastIndexOf(".")).toLowerCase();
+  if (!EXTENSIONS_PV.includes(ext))
+    return { erreur: `Format non accepté (${ext}). Formats : PDF, Word, photo (JPG/PNG/HEIC).` };
+  if (taille > TAILLE_MAX_PV) return { erreur: "Fichier trop lourd (maximum 10 Mo)." };
+  // Un seul fichier par réunion : l'ancien est retiré avant l'envoi du nouveau
+  await supprimerFichiersPV(reunionId);
+  return creerUrlUploadPV(reunionId, nomFichier);
+}
+
+export async function retirerFichierPV(reunionId: string) {
+  await exigerAdmin();
+  await supprimerFichiersPV(reunionId);
+  revaliderPV();
 }
 
 export async function supprimerReunion(formData: FormData) {
   await exigerAdmin();
-  await db.from("reunions").delete().eq("id", String(formData.get("id")));
-  revalidatePath("/admin/reunions");
+  const id = String(formData.get("id"));
+  await supprimerFichiersPV(id);
+  await db.from("reunions").delete().eq("id", id);
+  revaliderPV();
 }
 
 export async function majCaisse(formData: FormData) {

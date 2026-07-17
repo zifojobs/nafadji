@@ -31,7 +31,7 @@ export default async function Accueil() {
       <Link href="/pv" className="nf-up nf-up-2 rounded-[20px] bg-white p-4.5 shadow-[0_8px_24px_rgba(28,28,23,.12)]">
         <div className="text-[11px] uppercase tracking-[.14em] text-[#9A8B5E]">Dernier procès-verbal</div>
         <div className="mt-1.5 font-bold">{pv ? fmtDate(pv.date_reunion) : "Aucun PV"}</div>
-        {pv && <div className="mt-1 line-clamp-2 text-sm text-[#6B6B60]">{pv.pv_texte}</div>}
+        {pv && <div className="mt-1 line-clamp-2 text-sm text-[#6B6B60]">{pv.pv_texte ?? `📎 ${pv.fichier?.nom ?? "Fichier joint"}`}</div>}
       </Link>
 
       <div className="nf-up nf-up-3 nf-caisse-grad rounded-[20px] border border-[#E3B23C]/35 p-4.5 text-white">
