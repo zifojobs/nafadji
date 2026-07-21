@@ -1,10 +1,11 @@
 import { db } from "@/lib/db";
 import { getParametres } from "@/lib/requetes";
 import { calculerEtat } from "@/lib/cotisations";
-import { modifierMembre, definirCode, reactiverMembre } from "../actions";
+import { modifierMembre, reactiverMembre } from "../actions";
 import { MembreForm } from "./MembreForm";
 import { SupprimerMembre } from "./SupprimerMembre";
 import { SuspendreMembre } from "./SuspendreMembre";
+import { ReinitialiserCode } from "./ReinitialiserCode";
 
 export default async function AdminMembres() {
   const [{ data: membresBruts }, { data: versements }, { data: suspensions }, params] = await Promise.all([
@@ -61,11 +62,7 @@ export default async function AdminMembres() {
                 </div>
                 <button className="rounded-lg bg-[#1C1C17] px-3 py-1.5 text-sm text-white">Enregistrer</button>
               </form>
-              <form action={definirCode} className="mt-2 flex gap-2">
-                <input type="hidden" name="id" value={m.id} />
-                <input name="code" required placeholder="Nouveau code" className="flex-1 rounded-lg border border-[#E2DFD6] p-2 text-sm" />
-                <button className="rounded-lg bg-[#E3B23C] px-3 text-sm font-semibold text-[#1C1C17]">Réinitialiser le code</button>
-              </form>
+              <ReinitialiserCode id={m.id} />
               {m.actif ? (
                 <SuspendreMembre id={m.id} />
               ) : (

@@ -48,12 +48,20 @@ export async function modifierMembre(formData: FormData) {
   revalidatePath("/admin/membres");
 }
 
-export async function definirCode(formData: FormData) {
+export async function definirCode(
+  _prev: { ok?: string; erreur?: string } | null,
+  formData: FormData,
+): Promise<{ ok?: string; erreur?: string } | null> {
   await exigerAdmin();
-  await db.from("membres")
-    .update({ code_hash: await bcrypt.hash(String(formData.get("code")), 10) })
+  // Code laissé vide → généré automatiquement (6 chiffres), affiché au bureau après réinitialisation.
+  const saisi = String(formData.get("code") ?? "").trim();
+  const code = saisi || String(crypto.randomInt(100000, 999999));
+  const { error } = await db.from("membres")
+    .update({ code_hash: await bcrypt.hash(code, 10) })
     .eq("id", String(formData.get("id")));
+  if (error) return { erreur: error.message };
   revalidatePath("/admin/membres");
+  return { ok: `Nouveau code : ${code} (à transmettre en privé)` };
 }
 
 export type CotisationState = { erreur?: string } | null;
