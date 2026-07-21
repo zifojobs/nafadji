@@ -1,9 +1,12 @@
-import { getCaisse, getMouvements } from "@/lib/requetes";
+import { getCaisse, getMouvements, getEncaisseDuMois } from "@/lib/requetes";
 
 const fmtDate = (d: string) => new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+const moisEnCours = () => new Date().toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
 
 export default async function Caisse() {
-  const [caisse, { mouvements, totauxParAnnee }] = await Promise.all([getCaisse(), getMouvements()]);
+  const [caisse, { mouvements, totauxParAnnee }, encaisseDuMois] = await Promise.all([
+    getCaisse(), getMouvements(), getEncaisseDuMois(),
+  ]);
 
   return (
     <div className="space-y-3.5">
@@ -11,6 +14,11 @@ export default async function Caisse() {
         <div className="text-[11px] uppercase tracking-[.14em] text-white/60">Montant sur le compte bancaire</div>
         <div className="nf-serif mt-1.5 text-[30px] font-bold text-[#E3B23C]">{Number(caisse.solde).toLocaleString("fr-FR")} €</div>
         <div className="mt-1 text-xs text-white/65">Mis à jour le {fmtDate(caisse.maj_le)}</div>
+      </div>
+
+      <div className="nf-up nf-up-1 rounded-[20px] bg-white p-4 shadow-[0_8px_24px_rgba(28,28,23,.12)]">
+        <div className="text-[11px] uppercase tracking-[.14em] text-[#9A8B5E]">Cotisations encaissées — {moisEnCours()}</div>
+        <div className="mt-1.5 text-2xl font-bold text-[#1C1C17]">{encaisseDuMois.toLocaleString("fr-FR")} €</div>
       </div>
 
       <div className="nf-up nf-up-1 rounded-[20px] bg-white p-4 shadow-[0_8px_24px_rgba(28,28,23,.12)]">

@@ -28,6 +28,7 @@ export async function creerMembre(
     telephone: String(formData.get("telephone") ?? "").trim() || null,
     date_adhesion: String(formData.get("date_adhesion")),
     is_admin: formData.get("is_admin") === "on",
+    exempte_cotisation: formData.get("exempte_cotisation") === "on",
     code_hash: await bcrypt.hash(code, 10),
   });
   if (error) return { erreur: error.message };
@@ -42,6 +43,7 @@ export async function modifierMembre(formData: FormData) {
     telephone: String(formData.get("telephone") ?? "").trim() || null,
     date_adhesion: String(formData.get("date_adhesion")),
     is_admin: formData.get("is_admin") === "on",
+    exempte_cotisation: formData.get("exempte_cotisation") === "on",
   }).eq("id", String(formData.get("id")));
   revalidatePath("/admin/membres");
 }
@@ -59,7 +61,8 @@ export type CotisationState = { erreur?: string } | null;
 export async function enregistrerVersement(_prevState: CotisationState, formData: FormData): Promise<CotisationState> {
   await exigerAdmin();
   const montant = Number(formData.get("montant"));
-  if (!(montant > 0)) return { erreur: "Le montant doit être supérieur à 0." };
+  // Négatif accepté : sert à saisir une dette (ex. arriéré antérieur à l'appli).
+  if (!Number.isFinite(montant) || montant === 0) return { erreur: "Le montant ne peut pas être nul." };
   const { error } = await db.from("cotisations").insert({
     membre_id: String(formData.get("membre_id")),
     montant,
@@ -68,6 +71,8 @@ export async function enregistrerVersement(_prevState: CotisationState, formData
   });
   if (error) return { erreur: error.message };
   revalidatePath("/admin/cotisations");
+  revalidatePath("/cotisations");
+  revalidatePath("/");
   return null;
 }
 
@@ -75,6 +80,8 @@ export async function supprimerCotisation(formData: FormData) {
   await exigerAdmin();
   await db.from("cotisations").delete().eq("id", String(formData.get("id")));
   revalidatePath("/admin/cotisations");
+  revalidatePath("/cotisations");
+  revalidatePath("/");
 }
 
 export async function creerReunion(formData: FormData) {
@@ -154,6 +161,8 @@ export async function majCaisse(_prev: CaisseState, formData: FormData): Promise
   if (error) return { erreur: error.message };
   await db.from("caisse_historique").insert({ solde, maj_le: maintenant, maj_par: session.membreId, note });
   revalidatePath("/admin/caisse");
+  revalidatePath("/caisse");
+  revalidatePath("/");
   return { ok: `Montant enregistré : ${solde.toLocaleString("fr-FR")} € ✓` };
 }
 
@@ -167,12 +176,14 @@ export async function ajouterMouvement(formData: FormData) {
     cree_par: session.membreId,
   });
   revalidatePath("/admin/caisse");
+  revalidatePath("/caisse");
 }
 
 export async function supprimerMouvement(formData: FormData) {
   await exigerAdmin();
   await db.from("mouvements").delete().eq("id", String(formData.get("id")));
   revalidatePath("/admin/caisse");
+  revalidatePath("/caisse");
 }
 
 export async function majParametres(formData: FormData) {

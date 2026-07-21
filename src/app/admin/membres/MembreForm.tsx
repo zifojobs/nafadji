@@ -25,6 +25,7 @@ export function MembreForm() {
         <input name="code" placeholder="Code personnel (vide = généré automatiquement)" className="flex-1 rounded-lg border border-[#E2DFD6] p-2" />
         <label className="flex items-center gap-1 text-sm"><input type="checkbox" name="is_admin" /> Bureau</label>
       </div>
+      <label className="flex items-center gap-1 text-sm"><input type="checkbox" name="exempte_cotisation" /> Membre d&apos;honneur (ne cotise pas)</label>
       <button disabled={pending} className="nf-btn-grad rounded-lg px-4 py-2 font-semibold text-white disabled:opacity-60">
         {pending ? "Ajout..." : "Ajouter"}
       </button>

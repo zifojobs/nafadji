@@ -9,7 +9,7 @@ export async function getParametres() {
 
 export async function getEtatMembre(membreId: string): Promise<EtatCotisations & { versements: { montant: number; date_paiement: string; note: string | null }[] }> {
   const [{ data: membre }, { data: versements }, { data: suspensions }, parametres] = await Promise.all([
-    db.from("membres").select("date_adhesion").eq("id", membreId).single(),
+    db.from("membres").select("date_adhesion, exempte_cotisation").eq("id", membreId).single(),
     db.from("cotisations").select("montant, date_paiement, note").eq("membre_id", membreId).order("date_paiement", { ascending: false }),
     db.from("suspensions").select("debut, fin").eq("membre_id", membreId),
     getParametres(),
@@ -18,10 +18,19 @@ export async function getEtatMembre(membreId: string): Promise<EtatCotisations &
     dateAdhesion: membre!.date_adhesion,
     versements: (versements ?? []).map((v) => ({ montant: Number(v.montant) })),
     suspensions: suspensions ?? [],
-    montantMensuel: Number(parametres.montant_mensuel),
+    // Membre d'honneur : ne cotise pas, jamais de dette calculée pour lui.
+    montantMensuel: membre!.exempte_cotisation ? 0 : Number(parametres.montant_mensuel),
     aujourdhui: new Date().toISOString().slice(0, 10),
   });
   return { ...etat, versements: versements ?? [] };
+}
+
+// Total des cotisations réellement encaissées ce mois-ci (les dettes saisies
+// en négatif n'en font pas partie : ce n'est pas de l'argent reçu).
+export async function getEncaisseDuMois() {
+  const debutMois = `${new Date().toISOString().slice(0, 7)}-01`;
+  const { data } = await db.from("cotisations").select("montant").gte("date_paiement", debutMois);
+  return (data ?? []).reduce((s, v) => s + Math.max(0, Number(v.montant)), 0);
 }
 
 export async function getProchaineReunion() {

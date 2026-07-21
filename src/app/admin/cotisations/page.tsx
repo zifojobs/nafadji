@@ -7,21 +7,24 @@ import { CotisationForm } from "./CotisationForm";
 const fmtSolde = (s: number) => `${s > 0 ? "+" : ""}${s.toLocaleString("fr-FR")} €`;
 
 export default async function AdminCotisations() {
-  const [{ data: membres }, { data: versements }, { data: suspensions }, params] = await Promise.all([
-    db.from("membres").select("id, nom_complet, date_adhesion").eq("actif", true).order("nom_complet"),
+  const [{ data: membresBruts }, { data: versements }, { data: suspensions }, params] = await Promise.all([
+    db.from("membres").select("id, nom_complet, date_adhesion, exempte_cotisation").eq("actif", true),
     db.from("cotisations").select("*").order("date_paiement", { ascending: false }),
     db.from("suspensions").select("membre_id, debut, fin"),
     getParametres(),
   ]);
   const aujourdhui = new Date().toISOString().slice(0, 10);
+  const membres = [...(membresBruts ?? [])].sort((a, b) =>
+    a.nom_complet.localeCompare(b.nom_complet, "fr", { sensitivity: "base" }),
+  );
 
-  const etats = (membres ?? []).map((m) => ({
+  const etats = membres.map((m) => ({
     ...m,
     etat: calculerEtat({
       dateAdhesion: m.date_adhesion,
       versements: (versements ?? []).filter((v) => v.membre_id === m.id).map((v) => ({ montant: Number(v.montant) })),
       suspensions: (suspensions ?? []).filter((s) => s.membre_id === m.id),
-      montantMensuel: Number(params.montant_mensuel),
+      montantMensuel: m.exempte_cotisation ? 0 : Number(params.montant_mensuel),
       aujourdhui,
     }),
   }));
