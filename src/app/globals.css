@@ -45,6 +45,8 @@ input, select, textarea {
 .nf-up-1 { animation-delay: .07s; }
 .nf-up-2 { animation-delay: .14s; }
 .nf-up-3 { animation-delay: .21s; }
+.nf-up-4 { animation-delay: .28s; }
+.nf-up-5 { animation-delay: .35s; }
 
 .nf-radial-login { background: radial-gradient(120% 90% at 20% 0%, #12523E 0%, #0B3D2E 45%, #052419 100%); }
 .nf-radial-hero { background: radial-gradient(140% 120% at 80% -20%, #12523E 0%, #0B3D2E 55%, #062A1F 100%); }

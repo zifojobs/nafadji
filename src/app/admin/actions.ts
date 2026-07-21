@@ -89,9 +89,12 @@ export async function creerReunion(formData: FormData) {
   await db.from("reunions").insert({
     date_reunion: new Date(String(formData.get("date_reunion"))).toISOString(),
     lieu: String(formData.get("lieu")).trim(),
+    adresse: String(formData.get("adresse") ?? "").trim() || null,
     ordre_du_jour: String(formData.get("ordre_du_jour") ?? "").trim() || null,
   });
   revalidatePath("/admin/reunions");
+  revalidatePath("/reunions");
+  revalidatePath("/");
 }
 
 export async function modifierReunion(formData: FormData) {
@@ -99,9 +102,12 @@ export async function modifierReunion(formData: FormData) {
   await db.from("reunions").update({
     date_reunion: new Date(String(formData.get("date_reunion"))).toISOString(),
     lieu: String(formData.get("lieu")).trim(),
+    adresse: String(formData.get("adresse") ?? "").trim() || null,
     ordre_du_jour: String(formData.get("ordre_du_jour") ?? "").trim() || null,
   }).eq("id", String(formData.get("id")));
   revalidatePath("/admin/reunions");
+  revalidatePath("/reunions");
+  revalidatePath("/");
 }
 
 function revaliderPV() {

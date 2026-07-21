@@ -20,6 +20,7 @@ export default async function Reunions() {
         >
           <div className="nf-serif font-bold capitalize">{fmt(r.date_reunion)}</div>
           <div className="mt-1 text-sm text-white/80">{r.lieu}</div>
+          {r.adresse && <div className="text-sm text-white/70">{r.adresse}</div>}
           {r.ordre_du_jour && <p className="mt-2 whitespace-pre-wrap text-sm opacity-90">Ordre du jour : {r.ordre_du_jour}</p>}
         </div>
       ))}

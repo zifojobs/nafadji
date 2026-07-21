@@ -26,9 +26,10 @@ export default async function AdminReunions() {
       <form action={creerReunion} className="space-y-3 rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(28,28,23,.08)]">
         <h2 className="font-semibold text-[#1C1C17]">Nouvelle réunion</h2>
         <div className="flex flex-wrap gap-2">
-          <input name="date_reunion" type="datetime-local" required className="rounded-lg border border-[#E2DFD6] p-2" />
-          <input name="lieu" required placeholder="Lieu" className="flex-1 rounded-lg border border-[#E2DFD6] p-2" />
+          <input name="date_reunion" type="datetime-local" required placeholder="Date et heure" className="rounded-lg border border-[#E2DFD6] p-2" />
+          <input name="lieu" required placeholder="Lieu (ex. Chez Djiby DANFAKHA)" className="flex-1 rounded-lg border border-[#E2DFD6] p-2" />
         </div>
+        <textarea name="adresse" placeholder="Adresse (optionnel — ex. 1 Résidence du Vieux Moulin - 91350 Grigny)" rows={2} className="w-full rounded-lg border border-[#E2DFD6] p-2" />
         <textarea name="ordre_du_jour" placeholder="Ordre du jour (optionnel)" rows={2} className="w-full rounded-lg border border-[#E2DFD6] p-2" />
         <button className="nf-btn-grad rounded-lg px-4 py-2 font-semibold text-white">Créer</button>
       </form>
@@ -52,10 +53,11 @@ export default async function AdminReunions() {
             <form action={modifierReunion} className="mt-3 space-y-2 border-t border-[#E5E2D9] pt-3">
               <input type="hidden" name="id" value={r.id} />
               <div className="flex flex-wrap gap-2">
-                <input name="date_reunion" type="datetime-local" defaultValue={versLocal(r.date_reunion)} className="rounded-lg border border-[#E2DFD6] p-2" />
-                <input name="lieu" defaultValue={r.lieu} className="flex-1 rounded-lg border border-[#E2DFD6] p-2" />
+                <input name="date_reunion" type="datetime-local" defaultValue={versLocal(r.date_reunion)} placeholder="Date et heure" className="rounded-lg border border-[#E2DFD6] p-2" />
+                <input name="lieu" defaultValue={r.lieu} placeholder="Lieu (ex. Chez Djiby DANFAKHA)" className="flex-1 rounded-lg border border-[#E2DFD6] p-2" />
               </div>
-              <textarea name="ordre_du_jour" defaultValue={r.ordre_du_jour ?? ""} rows={2} className="w-full rounded-lg border border-[#E2DFD6] p-2" />
+              <textarea name="adresse" defaultValue={r.adresse ?? ""} placeholder="Adresse (optionnel — ex. 1 Résidence du Vieux Moulin - 91350 Grigny)" rows={2} className="w-full rounded-lg border border-[#E2DFD6] p-2" />
+              <textarea name="ordre_du_jour" defaultValue={r.ordre_du_jour ?? ""} placeholder="Ordre du jour (optionnel)" rows={2} className="w-full rounded-lg border border-[#E2DFD6] p-2" />
               <button className="rounded-lg bg-[#1C1C17] px-3 py-1.5 text-sm text-white">Enregistrer</button>
             </form>
             <PVForm reunionId={r.id} texteInitial={r.pv_texte ?? ""} fichier={fichiers[i]} />

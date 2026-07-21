@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { lireSession } from "@/lib/session";
-import { getEtatMembre, getProchaineReunion, getDernierPV, getCaisse } from "@/lib/requetes";
+import { getEtatMembre, getProchaineReunion, getDernierPV, getCaisse, getMouvements, getEncaisseDuMois } from "@/lib/requetes";
 
 const fmtDate = (d: string) => new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+const moisEnCours = () => new Date().toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
 
 export default async function Accueil() {
   const session = (await lireSession())!;
-  const [etat, reunion, pv, caisse] = await Promise.all([
-    getEtatMembre(session.membreId), getProchaineReunion(), getDernierPV(), getCaisse(),
+  const [etat, reunion, pv, caisse, { mouvements }, encaisseDuMois] = await Promise.all([
+    getEtatMembre(session.membreId), getProchaineReunion(), getDernierPV(), getCaisse(), getMouvements(), getEncaisseDuMois(),
   ]);
+  const dernierMouvement = mouvements[0] ?? null;
 
   return (
     <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
@@ -38,6 +40,19 @@ export default async function Accueil() {
         <div className="text-[11px] uppercase tracking-[.14em] text-white/60">Caisse de l&apos;association →</div>
         <div className="nf-serif mt-1.5 text-[30px] font-bold text-[#E3B23C]">{Number(caisse.solde).toLocaleString("fr-FR")} €</div>
         <div className="mt-1 text-xs text-white/65">Mis à jour le {fmtDate(caisse.maj_le)}</div>
+      </Link>
+
+      <Link href="/caisse" className="nf-up nf-up-4 rounded-[20px] bg-white p-4.5 shadow-[0_8px_24px_rgba(28,28,23,.12)]">
+        <div className="text-[11px] uppercase tracking-[.14em] text-[#9A8B5E]">Dons et dépenses</div>
+        <div className="mt-1.5 font-bold">
+          {dernierMouvement ? `${dernierMouvement.type === "don" ? "Don" : "Dépense"} — ${Number(dernierMouvement.montant).toLocaleString("fr-FR")} €` : "Aucun mouvement"}
+        </div>
+        {dernierMouvement && <div className="mt-1 line-clamp-1 text-sm text-[#6B6B60]">{dernierMouvement.libelle}</div>}
+      </Link>
+
+      <Link href="/caisse" className="nf-up nf-up-5 rounded-[20px] bg-white p-4.5 shadow-[0_8px_24px_rgba(28,28,23,.12)]">
+        <div className="text-[11px] uppercase tracking-[.14em] text-[#9A8B5E]">Cotisations — {moisEnCours()}</div>
+        <div className="mt-1.5 text-lg font-extrabold text-[#1C1C17]">{encaisseDuMois.toLocaleString("fr-FR")} €</div>
       </Link>
     </div>
   );
