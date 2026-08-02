@@ -1,7 +1,11 @@
-import { getReunions } from "@/lib/requetes";
+import { getReunions, getParametres, getDonneesFeuillesAppel, getPresencesParReunion } from "@/lib/requetes";
 import { getFichierPV, getUrlFichierPV } from "@/lib/pv";
+import { texteListePresence } from "@/lib/presences";
+import { ListePresence } from "@/components/ListePresence";
+import { BoutonSoumettre } from "@/components/BoutonSoumettre";
 import { creerReunion, modifierReunion, supprimerReunion } from "../actions";
 import { PVForm } from "./PVForm";
+import { FeuilleAppel } from "./FeuilleAppel";
 
 // datetime-local attend "YYYY-MM-DDTHH:mm" en heure locale
 const versLocal = (iso: string) => {
@@ -11,13 +15,25 @@ const versLocal = (iso: string) => {
 };
 
 export default async function AdminReunions() {
-  const reunions = await getReunions();
+  const [reunions, params, feuilles, presences] = await Promise.all([
+    getReunions(), getParametres(), getDonneesFeuillesAppel(), getPresencesParReunion(),
+  ]);
   const fichiers = await Promise.all(
     reunions.map(async (r) => {
       const f = await getFichierPV(r.id);
       return f ? { nom: f.nom, url: await getUrlFichierPV(f.chemin) } : null;
     }),
   );
+
+  // Ce qui a déjà été saisi, réunion par réunion, pour repeupler chaque feuille.
+  const statutsPar = (reunionId: string) =>
+    Object.fromEntries(
+      feuilles.presences.filter((p) => p.reunion_id === reunionId).map((p) => [p.membre_id, p.statut]),
+    );
+  const montantsPar = (reunionId: string) =>
+    Object.fromEntries(
+      feuilles.versements.filter((v) => v.reunion_id === reunionId).map((v) => [v.membre_id, Number(v.montant)]),
+    );
 
   return (
     <div className="space-y-6">
@@ -31,7 +47,7 @@ export default async function AdminReunions() {
         </div>
         <textarea name="adresse" placeholder="Adresse (optionnel — ex. 1 Résidence du Vieux Moulin - 91350 Grigny)" rows={2} className="w-full rounded-lg border border-[#E2DFD6] p-2" />
         <textarea name="ordre_du_jour" placeholder="Ordre du jour (optionnel)" rows={2} className="w-full rounded-lg border border-[#E2DFD6] p-2" />
-        <button className="nf-btn-grad rounded-lg px-4 py-2 font-semibold text-white">Créer</button>
+        <BoutonSoumettre enCours="Création…" className="nf-btn-grad rounded-lg px-4 py-2 font-semibold text-white">Créer</BoutonSoumettre>
       </form>
 
       {reunions.length > 0 && (
@@ -58,12 +74,29 @@ export default async function AdminReunions() {
               </div>
               <textarea name="adresse" defaultValue={r.adresse ?? ""} placeholder="Adresse (optionnel — ex. 1 Résidence du Vieux Moulin - 91350 Grigny)" rows={2} className="w-full rounded-lg border border-[#E2DFD6] p-2" />
               <textarea name="ordre_du_jour" defaultValue={r.ordre_du_jour ?? ""} placeholder="Ordre du jour (optionnel)" rows={2} className="w-full rounded-lg border border-[#E2DFD6] p-2" />
-              <button className="rounded-lg bg-[#1C1C17] px-3 py-1.5 text-sm text-white">Enregistrer</button>
+              <BoutonSoumettre enCours="Enregistrement…" className="rounded-lg bg-[#1C1C17] px-3 py-1.5 text-sm text-white">Enregistrer</BoutonSoumettre>
             </form>
-            <PVForm reunionId={r.id} texteInitial={r.pv_texte ?? ""} fichier={fichiers[i]} />
+            <FeuilleAppel
+              reunionId={r.id}
+              membres={feuilles.membres}
+              statuts={statutsPar(r.id)}
+              montants={montantsPar(r.id)}
+              montantDefaut={Number(params.montant_mensuel)}
+            />
+            {presences.get(r.id) && (
+              <div className="mt-3 border-t border-[#E5E2D9] pt-3">
+                <ListePresence groupes={presences.get(r.id)} />
+              </div>
+            )}
+            <PVForm
+              reunionId={r.id}
+              texteInitial={r.pv_texte ?? ""}
+              fichier={fichiers[i]}
+              listePresence={texteListePresence(presences.get(r.id) ?? { present: [], absent: [], excuse: [] })}
+            />
             <form action={supprimerReunion} className="mt-2 text-right">
               <input type="hidden" name="id" value={r.id} />
-              <button className="text-xs text-[#B3402A]">Supprimer la réunion</button>
+              <BoutonSoumettre enCours="Suppression…" className="text-xs text-[#B3402A]">Supprimer la réunion</BoutonSoumettre>
             </form>
           </details>
         );

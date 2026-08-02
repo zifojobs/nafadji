@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { getCaisse, getMouvements } from "@/lib/requetes";
 import { ajouterMouvement, supprimerMouvement } from "../actions";
 import { MajCaisseForm } from "./MajCaisseForm";
+import { BoutonSoumettre } from "@/components/BoutonSoumettre";
 
 export default async function AdminCaisse() {
   const [caisse, { mouvements, totauxParAnnee }, { data: historique }, { data: membres }] = await Promise.all([
@@ -35,7 +36,7 @@ export default async function AdminCaisse() {
           <input name="date_mouvement" type="date" defaultValue={aujourdhui} required className="rounded-lg border border-[#E2DFD6] p-2" />
         </div>
         <input name="libelle" required placeholder="Motif (ex : don funérailles, location salle…)" className="w-full rounded-lg border border-[#E2DFD6] p-2" />
-        <button className="nf-btn-grad rounded-lg px-4 py-2 font-semibold text-white">Ajouter</button>
+        <BoutonSoumettre enCours="Ajout…" className="nf-btn-grad rounded-lg px-4 py-2 font-semibold text-white">Ajouter</BoutonSoumettre>
       </form>
 
       <div className="rounded-2xl bg-white p-4 shadow-[0_2px_10px_rgba(28,28,23,.08)]">
@@ -45,11 +46,11 @@ export default async function AdminCaisse() {
           {mouvements.map((m) => (
             <li key={m.id} className="flex items-center justify-between py-2">
               <span>
-                <span className="font-semibold">{m.type === "don" ? "Don" : "Dépense"}</span> — {m.libelle} · {new Date(m.date_mouvement).toLocaleDateString("fr-FR")} · {Number(m.montant).toLocaleString("fr-FR")} €
+                <span className="font-semibold">{m.type === "don" ? "Don" : "Dépense"}</span> — {m.libelle} · {new Date(m.date_mouvement).toLocaleDateString("fr-FR")} · <span className="font-semibold text-[#B3402A]">{Number(m.montant).toLocaleString("fr-FR")} €</span>
               </span>
               <form action={supprimerMouvement}>
                 <input type="hidden" name="id" value={m.id} />
-                <button className="text-xs text-[#B3402A]">Supprimer</button>
+                <BoutonSoumettre enCours="…" className="text-xs text-[#B3402A]">Supprimer</BoutonSoumettre>
               </form>
             </li>
           ))}
@@ -59,7 +60,7 @@ export default async function AdminCaisse() {
             {totauxParAnnee.map(([annee, total]) => (
               <li key={annee} className="flex justify-between py-1">
                 <span>Total sorties {annee}</span>
-                <span className="font-semibold">{total.toLocaleString("fr-FR")} €</span>
+                <span className="font-semibold text-[#B3402A]">{total.toLocaleString("fr-FR")} €</span>
               </li>
             ))}
           </ul>

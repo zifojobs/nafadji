@@ -6,6 +6,7 @@ import { MembreForm } from "./MembreForm";
 import { SupprimerMembre } from "./SupprimerMembre";
 import { SuspendreMembre } from "./SuspendreMembre";
 import { ReinitialiserCode } from "./ReinitialiserCode";
+import { BoutonSoumettre } from "@/components/BoutonSoumettre";
 
 export default async function AdminMembres() {
   const [{ data: membresBruts }, { data: versements }, { data: suspensions }, params] = await Promise.all([
@@ -60,7 +61,7 @@ export default async function AdminMembres() {
                   <label className="flex items-center gap-1"><input type="checkbox" name="is_admin" defaultChecked={m.is_admin} /> Bureau</label>
                   <label className="flex items-center gap-1"><input type="checkbox" name="exempte_cotisation" defaultChecked={m.exempte_cotisation} /> Membre d&apos;honneur (ne cotise pas)</label>
                 </div>
-                <button className="rounded-lg bg-[#1C1C17] px-3 py-1.5 text-sm text-white">Enregistrer</button>
+                <BoutonSoumettre enCours="Enregistrement…" className="rounded-lg bg-[#1C1C17] px-3 py-1.5 text-sm text-white">Enregistrer</BoutonSoumettre>
               </form>
               <ReinitialiserCode id={m.id} />
               {m.actif ? (
@@ -68,7 +69,7 @@ export default async function AdminMembres() {
               ) : (
                 <form action={reactiverMembre} className="mt-2">
                   <input type="hidden" name="id" value={m.id} />
-                  <button className="rounded-lg bg-[#1E8A54] px-3 py-1.5 text-sm font-semibold text-white">Réactiver</button>
+                  <BoutonSoumettre enCours="Réactivation…" className="rounded-lg bg-[#1E8A54] px-3 py-1.5 text-sm font-semibold text-white">Réactiver</BoutonSoumettre>
                 </form>
               )}
               <SupprimerMembre id={m.id} nom={m.nom_complet} />

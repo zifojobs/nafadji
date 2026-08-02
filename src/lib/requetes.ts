@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { calculerEtat, type EtatCotisations } from "@/lib/cotisations";
 import { getFichierPV, getIdsAvecFichierPV, getUrlFichierPV } from "@/lib/pv";
+import { grouperPresences, type GroupesPresence } from "@/lib/presences";
 
 export async function getParametres() {
   const { data } = await db.from("parametres").select("*").eq("id", 1).single();
@@ -31,6 +32,63 @@ export async function getEncaisseDuMois() {
   const debutMois = `${new Date().toISOString().slice(0, 7)}-01`;
   const { data } = await db.from("cotisations").select("montant").gte("date_paiement", debutMois);
   return (data ?? []).reduce((s, v) => s + Math.max(0, Number(v.montant)), 0);
+}
+
+// Historique des encaissements, mois par mois, du plus récent au plus ancien.
+// Même règle que getEncaisseDuMois : les dettes saisies en négatif ne sont pas
+// de l'argent reçu, elles ne comptent ni dans un mois ni dans le total.
+export async function getEncaissementsParMois() {
+  const { data } = await db.from("cotisations").select("montant, date_paiement");
+  const parMois = new Map<string, { total: number; nb: number }>();
+  let total = 0;
+  for (const v of data ?? []) {
+    const montant = Number(v.montant);
+    if (montant <= 0) continue;
+    const mois = String(v.date_paiement).slice(0, 7);
+    const ligne = parMois.get(mois) ?? { total: 0, nb: 0 };
+    parMois.set(mois, { total: ligne.total + montant, nb: ligne.nb + 1 });
+    total += montant;
+  }
+  return {
+    mois: [...parMois.entries()]
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([mois, l]) => ({ mois, ...l })),
+    total,
+  };
+}
+
+// Tout ce qu'il faut pour afficher les feuilles d'appel : les membres à appeler
+// et ce qui a déjà été saisi, toutes réunions confondues (l'appel est rejouable).
+export async function getDonneesFeuillesAppel() {
+  const [{ data: membres }, { data: presences }, { data: versements }] = await Promise.all([
+    db.from("membres").select("id, nom_complet, exempte_cotisation").eq("actif", true),
+    db.from("presences").select("reunion_id, membre_id, statut"),
+    db.from("cotisations").select("reunion_id, membre_id, montant").not("reunion_id", "is", null),
+  ]);
+  return {
+    membres: [...(membres ?? [])].sort((a, b) =>
+      a.nom_complet.localeCompare(b.nom_complet, "fr", { sensitivity: "base" }),
+    ),
+    presences: presences ?? [],
+    versements: versements ?? [],
+  };
+}
+
+// Présents / excusés / absents de chaque réunion, prêts à afficher.
+// Les membres suspendus sont inclus : ils ont pu assister à une réunion passée.
+export async function getPresencesParReunion(): Promise<Map<string, GroupesPresence>> {
+  const [{ data: presences }, { data: membres }] = await Promise.all([
+    db.from("presences").select("reunion_id, membre_id, statut"),
+    db.from("membres").select("id, nom_complet"),
+  ]);
+  const nomParId = new Map((membres ?? []).map((m) => [m.id, m.nom_complet]));
+  const parReunion = new Map<string, { membre_id: string; statut: string }[]>();
+  for (const p of presences ?? []) {
+    const lignes = parReunion.get(p.reunion_id) ?? [];
+    lignes.push({ membre_id: p.membre_id, statut: p.statut });
+    parReunion.set(p.reunion_id, lignes);
+  }
+  return new Map([...parReunion].map(([id, lignes]) => [id, grouperPresences(lignes, nomParId)]));
 }
 
 export async function getProchaineReunion() {

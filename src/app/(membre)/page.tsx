@@ -45,14 +45,19 @@ export default async function Accueil() {
       <Link href="/caisse" className="nf-up nf-up-4 rounded-[20px] bg-white p-4.5 shadow-[0_8px_24px_rgba(28,28,23,.12)]">
         <div className="text-[11px] uppercase tracking-[.14em] text-[#9A8B5E]">Dons et dépenses</div>
         <div className="mt-1.5 font-bold">
-          {dernierMouvement ? `${dernierMouvement.type === "don" ? "Don" : "Dépense"} — ${Number(dernierMouvement.montant).toLocaleString("fr-FR")} €` : "Aucun mouvement"}
+          {dernierMouvement ? (
+            <>
+              {dernierMouvement.type === "don" ? "Don" : "Dépense"} —{" "}
+              <span className="text-[#B3402A]">{Number(dernierMouvement.montant).toLocaleString("fr-FR")} €</span>
+            </>
+          ) : "Aucun mouvement"}
         </div>
         {dernierMouvement && <div className="mt-1 line-clamp-1 text-sm text-[#6B6B60]">{dernierMouvement.libelle}</div>}
       </Link>
 
       <Link href="/caisse" className="nf-up nf-up-5 rounded-[20px] bg-white p-4.5 shadow-[0_8px_24px_rgba(28,28,23,.12)]">
         <div className="text-[11px] uppercase tracking-[.14em] text-[#9A8B5E]">Cotisations — {moisEnCours()}</div>
-        <div className="mt-1.5 text-lg font-extrabold text-[#1C1C17]">{encaisseDuMois.toLocaleString("fr-FR")} €</div>
+        <div className="mt-1.5 text-lg font-extrabold text-[#1E8A54]">{encaisseDuMois.toLocaleString("fr-FR")} €</div>
       </Link>
     </div>
   );

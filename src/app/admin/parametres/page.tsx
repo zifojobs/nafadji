@@ -1,5 +1,6 @@
 import { getParametres } from "@/lib/requetes";
 import { majParametres } from "../actions";
+import { BoutonSoumettre } from "@/components/BoutonSoumettre";
 
 export default async function AdminParametres() {
   const p = await getParametres();
@@ -16,7 +17,7 @@ export default async function AdminParametres() {
         <label className="block text-sm text-[#3E3E35]">Devise
           <input name="devise" defaultValue={p.devise} className="mt-1 w-full rounded-lg border border-[#E2DFD6] p-2" />
         </label>
-        <button className="nf-btn-grad rounded-lg px-4 py-2 font-semibold text-white">Enregistrer</button>
+        <BoutonSoumettre enCours="Enregistrement…" className="nf-btn-grad rounded-lg px-4 py-2 font-semibold text-white">Enregistrer</BoutonSoumettre>
       </form>
     </div>
   );

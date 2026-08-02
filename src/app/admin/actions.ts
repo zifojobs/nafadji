@@ -118,6 +118,68 @@ export async function modifierReunion(formData: FormData) {
   revalidatePath("/");
 }
 
+export type FeuilleState = { ok?: string; erreur?: string } | null;
+
+// Feuille d'appel : présence + versement encaissé séance tenante, en une seule
+// validation. Rejouable — réenregistrer la même feuille corrige, ne duplique pas.
+export async function enregistrerFeuilleAppel(_prev: FeuilleState, formData: FormData): Promise<FeuilleState> {
+  await exigerAdmin();
+  const reunionId = String(formData.get("reunion_id"));
+  const { data: reunion } = await db.from("reunions").select("date_reunion").eq("id", reunionId).single();
+  if (!reunion) return { erreur: "Réunion introuvable." };
+  // Le versement est daté du jour de la réunion, pas du jour de la saisie :
+  // c'est ce qui le range dans le bon mois d'encaissement.
+  const dateVersement = new Date(reunion.date_reunion).toISOString().slice(0, 10);
+
+  const membreIds = String(formData.get("membre_ids") ?? "").split(",").filter(Boolean);
+  if (membreIds.length === 0) return { erreur: "Aucun membre à appeler." };
+
+  const presences: { reunion_id: string; membre_id: string; statut: string }[] = [];
+  const versements: { membre_id: string; reunion_id: string; montant: number; date_paiement: string }[] = [];
+  let nbPresents = 0;
+  let totalEncaisse = 0;
+
+  for (const id of membreIds) {
+    const statut = String(formData.get(`statut_${id}`) ?? "");
+    if (statut === "present" || statut === "absent" || statut === "excuse") {
+      presences.push({ reunion_id: reunionId, membre_id: id, statut });
+      if (statut === "present") nbPresents++;
+    }
+    const saisi = String(formData.get(`montant_${id}`) ?? "").trim();
+    if (saisi === "") continue;
+    const montant = Number(saisi);
+    if (!Number.isFinite(montant)) return { erreur: "Un des montants saisis n'est pas un nombre." };
+    if (montant === 0) continue;
+    versements.push({ membre_id: id, reunion_id: reunionId, montant, date_paiement: dateVersement });
+    totalEncaisse += Math.max(0, montant);
+  }
+
+  if (presences.length > 0) {
+    const { error } = await db.from("presences").upsert(presences, { onConflict: "reunion_id,membre_id" });
+    if (error) return { erreur: error.message };
+  }
+
+  // On efface uniquement ce que CETTE feuille avait déjà écrit (reunion_id posé) :
+  // les versements saisis hors réunion n'ont pas de reunion_id et ne sont pas touchés.
+  const { error: erreurPurge } = await db.from("cotisations")
+    .delete().eq("reunion_id", reunionId).in("membre_id", membreIds);
+  if (erreurPurge) return { erreur: erreurPurge.message };
+
+  if (versements.length > 0) {
+    const { error } = await db.from("cotisations").insert(versements);
+    // La purge a déjà eu lieu : le bureau doit savoir que les montants sont à ressaisir.
+    if (error) return { erreur: `Les montants n'ont pas été enregistrés, ressaisissez-les — ${error.message}` };
+  }
+
+  revalidatePath("/admin/reunions");
+  revalidatePath("/admin/cotisations");
+  revalidatePath("/cotisations");
+  revalidatePath("/caisse");
+  revalidatePath("/pv");
+  revalidatePath("/");
+  return { ok: `Feuille enregistrée — ${nbPresents} présent${nbPresents > 1 ? "s" : ""}, ${totalEncaisse.toLocaleString("fr-FR")} € encaissés ✓` };
+}
+
 function revaliderPV() {
   revalidatePath("/admin/reunions");
   revalidatePath("/pv");

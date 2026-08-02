@@ -6,11 +6,12 @@ import { enregistrerTextePV, preparerUploadPV, retirerFichierPV } from "../actio
 const ACCEPT = ".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,.heic";
 
 export function PVForm({
-  reunionId, texteInitial, fichier,
+  reunionId, texteInitial, fichier, listePresence,
 }: {
   reunionId: string;
   texteInitial: string;
   fichier: { nom: string; url: string | null } | null;
+  listePresence: string;
 }) {
   const [pending, setPending] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -19,6 +20,19 @@ export function PVForm({
   const [, startTransition] = useTransition();
   const fichierRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const texteRef = useRef<HTMLTextAreaElement>(null);
+
+  // Insertion à la demande, au curseur (donc en tête si le texte n'a pas été touché).
+  // Le PV affiché garde de toute façon sa liste à jour : ceci sert à la retoucher.
+  function onInsererPresence() {
+    const zone = texteRef.current;
+    if (!zone) return;
+    const bloc = `${listePresence}\n\n`;
+    const pos = zone.selectionStart ?? 0;
+    zone.value = zone.value.slice(0, pos) + bloc + zone.value.slice(pos);
+    zone.focus();
+    zone.selectionStart = zone.selectionEnd = pos + bloc.length;
+  }
 
   // Réunion sans PV → on déplie la carte à l'arrivée pour que le formulaire soit visible
   // (attribut posé côté client uniquement : le serveur ne le contrôle pas, pas de repli après enregistrement)
@@ -71,7 +85,17 @@ export function PVForm({
       <label className="text-sm font-semibold text-[#1C1C17]">Procès-verbal</label>
       {erreur && <div className="rounded-lg bg-[#FBEAE5] px-3 py-2 text-sm font-medium text-[#B3402A]">{erreur}</div>}
       {ok && <div className="rounded-lg bg-[#E8F3ED] px-3 py-2 text-sm font-medium text-[#1E8A54]">PV enregistré ✓</div>}
-      <textarea name="pv_texte" defaultValue={texteInitial} rows={6} placeholder="Rédiger le PV ici..." className="w-full rounded-lg border border-[#E2DFD6] p-2" />
+      <textarea ref={texteRef} name="pv_texte" defaultValue={texteInitial} rows={6} placeholder="Rédiger le PV ici..." className="w-full rounded-lg border border-[#E2DFD6] p-2" />
+      {listePresence && (
+        <button
+          type="button"
+          onClick={onInsererPresence}
+          disabled={pending}
+          className="rounded-lg border border-[#E2DFD6] px-3 py-1.5 text-xs font-semibold text-[#0B3D2E] disabled:opacity-60"
+        >
+          ↓ Insérer la liste des présents dans le texte
+        </button>
+      )}
       {fichier && (
         <div className="flex flex-wrap items-center gap-2 rounded-lg bg-[#F4F1E8] px-3 py-2 text-sm">
           <span>📎</span>
