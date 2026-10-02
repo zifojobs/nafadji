@@ -44,11 +44,15 @@ export default async function AdminMembres() {
                   {m.nom_complet} {m.is_admin && <span className="rounded bg-[#1C1C17] px-1 text-xs text-white">bureau</span>}
                   {m.exempte_cotisation && <span className="rounded bg-[#E3B23C] px-1 text-xs font-semibold text-[#1C1C17]">Membre d&apos;honneur</span>}
                   {!m.actif && <span className="ml-1 rounded bg-[#9A9A90] px-1 text-xs text-white">Suspendu</span>}
+                  {m.notes_bureau && <span className="ml-1 text-xs" title="Notes du bureau">📝</span>}
                   {m.actif && etat.moisRetard >= 3 && (
                     <span className="ml-1 rounded bg-[#FBEAE5] px-1 text-xs font-semibold text-[#B3402A]">⚠ {etat.moisRetard} mois de retard</span>
                   )}
                 </span>
-                <span className="text-sm text-[#6B6B60]">adhésion {new Date(m.date_adhesion).toLocaleDateString("fr-FR")}</span>
+                <span className="text-sm text-[#6B6B60]">
+                  {etat.couvertJusqua && <>payé jusqu&apos;à {new Date(etat.couvertJusqua).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })} · </>}
+                  adhésion {new Date(m.date_adhesion).toLocaleDateString("fr-FR")}
+                </span>
               </summary>
               <form action={modifierMembre} className="mt-3 space-y-2 border-t border-[#E5E2D9] pt-3">
                 <input type="hidden" name="id" value={m.id} />
@@ -57,6 +61,13 @@ export default async function AdminMembres() {
                   <input name="telephone" defaultValue={m.telephone ?? ""} placeholder="Téléphone" className="flex-1 rounded-lg border border-[#E2DFD6] p-2" />
                   <input name="date_adhesion" type="date" defaultValue={m.date_adhesion} className="rounded-lg border border-[#E2DFD6] p-2" />
                 </div>
+                <textarea
+                  name="notes_bureau"
+                  defaultValue={m.notes_bureau ?? ""}
+                  rows={3}
+                  placeholder="Notes du bureau — infos utiles, pense-bête (jamais visibles par le membre)"
+                  className="w-full rounded-lg border border-[#E2DFD6] p-2 text-sm"
+                />
                 <div className="flex gap-4 text-sm">
                   <label className="flex items-center gap-1"><input type="checkbox" name="is_admin" defaultChecked={m.is_admin} /> Bureau</label>
                   <label className="flex items-center gap-1"><input type="checkbox" name="exempte_cotisation" defaultChecked={m.exempte_cotisation} /> Membre d&apos;honneur (ne cotise pas)</label>

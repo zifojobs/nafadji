@@ -68,9 +68,14 @@ export default async function AdminCotisations() {
           {etats.map((m) => (
             <li key={m.id} className="flex justify-between py-2 text-sm">
               <span>{m.nom_complet}</span>
-              {m.etat.solde < 0
-                ? <span className="font-semibold text-[#B3402A]">{fmtSolde(m.etat.solde)} — {m.etat.moisRetard} mois</span>
-                : <span className="font-semibold text-[#1E8A54]">{m.etat.solde > 0 ? `${fmtSolde(m.etat.solde)} d'avance` : "À jour ✓"}</span>}
+              <span className="text-right">
+                {m.etat.solde < 0
+                  ? <span className="font-semibold text-[#B3402A]">{fmtSolde(m.etat.solde)} — {m.etat.moisRetard} mois</span>
+                  : <span className="font-semibold text-[#1E8A54]">{m.etat.solde > 0 ? `${fmtSolde(m.etat.solde)} d'avance` : "À jour ✓"}</span>}
+                {m.etat.couvertJusqua && (
+                  <span className="block text-xs text-[#6B6B60]">payé jusqu&apos;à {fmtMois(m.etat.couvertJusqua.slice(0, 7))}</span>
+                )}
+              </span>
             </li>
           ))}
         </ul>

@@ -7,6 +7,7 @@ const LIENS = [
   ["/admin/cotisations", "Cotisations"],
   ["/admin/reunions", "Réunions & PV"],
   ["/admin/caisse", "Caisse"],
+  ["/admin/achat", "Achat appli"],
   ["/admin/parametres", "Paramètres"],
 ] as const;
 

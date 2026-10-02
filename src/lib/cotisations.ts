@@ -7,6 +7,8 @@ export type EtatCotisations = {
   moisRetard: number;
   aJour: boolean;
   aJourJusqua: string | null;
+  // Dernier mois réglé, qu'il soit passé (membre en retard) ou futur (avance).
+  couvertJusqua: string | null;
 };
 
 // Tout en chaînes "YYYY-MM-01" — aucune manipulation de fuseau horaire.
@@ -19,7 +21,7 @@ export function calculerEtat(args: {
 }): EtatCotisations {
   if (!(args.montantMensuel > 0)) {
     const totalVerse = args.versements.reduce((s, v) => s + v.montant, 0);
-    return { moisDus: [], totalVerse, solde: totalVerse, moisRetard: 0, aJour: true, aJourJusqua: null };
+    return { moisDus: [], totalVerse, solde: totalVerse, moisRetard: 0, aJour: true, aJourJusqua: null, couvertJusqua: null };
   }
   const [ya, ma] = args.dateAdhesion.split("-").map(Number);
   const [yn, mn] = args.aujourdhui.split("-").map(Number);
@@ -48,5 +50,9 @@ export function calculerEtat(args: {
     aJourJusqua = cle(y, m);
   }
 
-  return { moisDus, totalVerse, solde, moisRetard, aJour: solde >= 0, aJourJusqua };
+  // Couvert : en avance, c'est le mois projeté ; sinon le dernier mois dû réglé.
+  const couvertJusqua =
+    moisCouverts > moisDus.length ? aJourJusqua : moisCouverts > 0 ? moisDus[moisCouverts - 1] : null;
+
+  return { moisDus, totalVerse, solde, moisRetard, aJour: solde >= 0, aJourJusqua, couvertJusqua };
 }

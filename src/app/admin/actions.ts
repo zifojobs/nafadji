@@ -44,6 +44,7 @@ export async function modifierMembre(formData: FormData) {
     date_adhesion: String(formData.get("date_adhesion")),
     is_admin: formData.get("is_admin") === "on",
     exempte_cotisation: formData.get("exempte_cotisation") === "on",
+    notes_bureau: String(formData.get("notes_bureau") ?? "").trim() || null,
   }).eq("id", String(formData.get("id")));
   revalidatePath("/admin/membres");
 }
@@ -90,6 +91,28 @@ export async function supprimerCotisation(formData: FormData) {
   revalidatePath("/admin/cotisations");
   revalidatePath("/cotisations");
   revalidatePath("/");
+}
+
+export type ContributionState = { erreur?: string } | null;
+
+export async function enregistrerContributionAchat(_prev: ContributionState, formData: FormData): Promise<ContributionState> {
+  await exigerAdmin();
+  const montant = Number(formData.get("montant"));
+  if (!Number.isFinite(montant) || montant <= 0) return { erreur: "Le montant doit être positif." };
+  const { error } = await db.from("contributions_achat").insert({
+    membre_id: String(formData.get("membre_id")),
+    montant,
+    date_versement: String(formData.get("date_versement")),
+  });
+  if (error) return { erreur: error.message };
+  revalidatePath("/admin/achat");
+  return null;
+}
+
+export async function supprimerContributionAchat(formData: FormData) {
+  await exigerAdmin();
+  await db.from("contributions_achat").delete().eq("id", String(formData.get("id")));
+  revalidatePath("/admin/achat");
 }
 
 export async function creerReunion(formData: FormData) {

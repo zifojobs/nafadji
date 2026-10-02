@@ -90,4 +90,39 @@ describe("calculerEtat (modèle solde)", () => {
     expect(e.aJourJusqua).toBeNull();
     expect(e.moisRetard).toBe(0);
   });
+  it("couvert jusqu'à : à jour pile → mois en cours", () => {
+    const e = calculerEtat({
+      dateAdhesion: "2026-05-10",
+      versements: [{ montant: 60 }],
+      montantMensuel: M, aujourdhui: "2026-07-16",
+    });
+    expect(e.couvertJusqua).toBe("2026-07-01");
+  });
+
+  it("couvert jusqu'à : en retard → dernier mois réglé (passé)", () => {
+    const e = calculerEtat({
+      dateAdhesion: "2026-01-05",
+      versements: [{ montant: 40 }],
+      montantMensuel: M, aujourdhui: "2026-06-20",
+    });
+    expect(e.couvertJusqua).toBe("2026-02-01");
+  });
+
+  it("couvert jusqu'à : en avance → même mois que aJourJusqua", () => {
+    const e = calculerEtat({
+      dateAdhesion: "2026-07-01",
+      versements: [{ montant: 100 }],
+      montantMensuel: M, aujourdhui: "2026-07-16",
+    });
+    expect(e.couvertJusqua).toBe("2026-11-01");
+    expect(e.couvertJusqua).toBe(e.aJourJusqua);
+  });
+
+  it("couvert jusqu'à : rien versé → null", () => {
+    const e = calculerEtat({
+      dateAdhesion: "2026-05-10", versements: [],
+      montantMensuel: M, aujourdhui: "2026-07-16",
+    });
+    expect(e.couvertJusqua).toBeNull();
+  });
 });
