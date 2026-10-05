@@ -1,10 +1,9 @@
 import { db } from "@/lib/db";
+import { OBJECTIF_ACHAT_APPLI as OBJECTIF } from "@/lib/requetes";
 import { supprimerContributionAchat } from "../actions";
 import { ContributionForm } from "./ContributionForm";
 import { BoutonSoumettre } from "@/components/BoutonSoumettre";
 
-// Prix de l'application convenu le 22/07/2026.
-const OBJECTIF = 500;
 const fmtEuros = (n: number) => `${n.toLocaleString("fr-FR")} €`;
 
 export default async function AdminAchat() {

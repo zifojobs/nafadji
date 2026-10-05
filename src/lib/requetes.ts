@@ -34,6 +34,15 @@ export async function getEncaisseDuMois() {
   return (data ?? []).reduce((s, v) => s + Math.max(0, Number(v.montant)), 0);
 }
 
+// Prix de l'application convenu le 22/07/2026 : l'objectif de la collecte « Achat appli ».
+export const OBJECTIF_ACHAT_APPLI = 500;
+
+// Total collecté pour l'achat de l'appli, sans aucun nom : c'est tout ce que voit un membre.
+export async function getTotalAchatAppli() {
+  const { data } = await db.from("contributions_achat").select("montant");
+  return (data ?? []).reduce((s, c) => s + Number(c.montant), 0);
+}
+
 // Historique des encaissements, mois par mois, du plus récent au plus ancien.
 // Même règle que getEncaisseDuMois : les dettes saisies en négatif ne sont pas
 // de l'argent reçu, elles ne comptent ni dans un mois ni dans le total.
