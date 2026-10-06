@@ -43,18 +43,18 @@ export async function getTotalAchatAppli() {
   return (data ?? []).reduce((s, c) => s + Number(c.montant), 0);
 }
 
-// Noms de ceux qui ont participé à l'achat de l'appli (demande de Bangaly, 06/10) :
-// les noms seulement, jamais les montants individuels.
+// Ceux qui ont participé à l'achat de l'appli, avec le total versé par chacun (demande du 06/10).
 export async function getParticipantsAchatAppli() {
   const [{ data: contributions }, { data: membres }] = await Promise.all([
-    db.from("contributions_achat").select("membre_id"),
+    db.from("contributions_achat").select("membre_id, montant"),
     db.from("membres").select("id, nom_complet"),
   ]);
-  const ids = new Set((contributions ?? []).map((c) => c.membre_id));
+  const parMembre = new Map<string, number>();
+  for (const c of contributions ?? []) parMembre.set(c.membre_id, (parMembre.get(c.membre_id) ?? 0) + Number(c.montant));
   return (membres ?? [])
-    .filter((m) => ids.has(m.id))
-    .map((m) => m.nom_complet)
-    .sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
+    .filter((m) => parMembre.has(m.id))
+    .map((m) => ({ nom: m.nom_complet, montant: parMembre.get(m.id)! }))
+    .sort((a, b) => a.nom.localeCompare(b.nom, "fr", { sensitivity: "base" }));
 }
 
 // Historique des encaissements, mois par mois, du plus récent au plus ancien.
