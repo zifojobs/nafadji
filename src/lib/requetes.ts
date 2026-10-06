@@ -37,10 +37,24 @@ export async function getEncaisseDuMois() {
 // Prix de l'application convenu le 22/07/2026 : l'objectif de la collecte « Achat appli ».
 export const OBJECTIF_ACHAT_APPLI = 500;
 
-// Total collecté pour l'achat de l'appli, sans aucun nom : c'est tout ce que voit un membre.
+// Total collecté pour l'achat de l'appli, sur l'accueil membre.
 export async function getTotalAchatAppli() {
   const { data } = await db.from("contributions_achat").select("montant");
   return (data ?? []).reduce((s, c) => s + Number(c.montant), 0);
+}
+
+// Noms de ceux qui ont participé à l'achat de l'appli (demande de Bangaly, 06/10) :
+// les noms seulement, jamais les montants individuels.
+export async function getParticipantsAchatAppli() {
+  const [{ data: contributions }, { data: membres }] = await Promise.all([
+    db.from("contributions_achat").select("membre_id"),
+    db.from("membres").select("id, nom_complet"),
+  ]);
+  const ids = new Set((contributions ?? []).map((c) => c.membre_id));
+  return (membres ?? [])
+    .filter((m) => ids.has(m.id))
+    .map((m) => m.nom_complet)
+    .sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
 }
 
 // Historique des encaissements, mois par mois, du plus récent au plus ancien.

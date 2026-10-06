@@ -5,6 +5,7 @@ const TITRES: Record<string, string> = {
   "/cotisations": "Mes cotisations",
   "/pv": "Procès-verbaux",
   "/reunions": "Réunions",
+  "/achat-appli": "Achat de l'application",
 };
 
 export function HeroTitle({ prenom }: { prenom: string }) {

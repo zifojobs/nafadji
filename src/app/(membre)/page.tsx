@@ -61,7 +61,7 @@ export default async function Accueil() {
         <div className="mt-1.5 text-lg font-extrabold text-[#1E8A54]">{encaisseDuMois.toLocaleString("fr-FR")} €</div>
       </Link>
 
-      <div className="nf-up nf-up-5 rounded-[20px] bg-white p-4.5 shadow-[0_8px_24px_rgba(28,28,23,.12)]">
+      <Link href="/achat-appli" className="nf-up nf-up-5 rounded-[20px] bg-white p-4.5 shadow-[0_8px_24px_rgba(28,28,23,.12)]">
         <div className="text-[11px] uppercase tracking-[.14em] text-[#9A8B5E]">Achat de l&apos;application</div>
         <div className="mt-1.5 flex items-baseline justify-between">
           <span className="text-lg font-extrabold text-[#1E8A54]">{totalAchat.toLocaleString("fr-FR")} €</span>
@@ -70,7 +70,7 @@ export default async function Accueil() {
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#E5E2D9]">
           <div className="h-full rounded-full bg-[#1E8A54]" style={{ width: `${Math.min(100, (totalAchat / OBJECTIF_ACHAT_APPLI) * 100)}%` }} />
         </div>
-      </div>
+      </Link>
     </div>
   );
 }
